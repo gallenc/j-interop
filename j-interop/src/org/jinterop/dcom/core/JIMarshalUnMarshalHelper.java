@@ -16,9 +16,6 @@
  */
 package org.jinterop.dcom.core;
 
-
-
-
 import java.io.UnsupportedEncodingException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -37,109 +34,91 @@ import org.jinterop.dcom.common.JIException;
 import org.jinterop.dcom.common.JIRuntimeException;
 import org.jinterop.dcom.common.JISystem;
 import org.jinterop.dcom.impls.automation.IJIDispatch;
-
+import org.jinterop.dcom.impls.wmi.JIWbemObjectArray;
 import rpc.core.UUID;
 
 final class JIMarshalUnMarshalHelper {
 
 	private static Map mapOfSerializers = new HashMap();
 
-
-
-
 	//TODO This is very important , please note that arrays in C++ have a fixed size and unlike Java have to be
 	//declared with there Max index right in the beginning. therefore all arrays (of any type) , will
 	//already come padded here to there Max size., this has to be ensured by the caller
 	// Basically the index on COMs side should match with the array length here...otherwise exception
 	// will come. This has to be managed by IDL generator.
-	static{
-
-		mapOfSerializers.put(Date.class,new JIMarshalUnMarshalHelper.DateImpl());
-		mapOfSerializers.put(JICurrency.class,new JIMarshalUnMarshalHelper.JICurrencyImpl());
-		mapOfSerializers.put(VariantBody.class,new JIMarshalUnMarshalHelper.JIVariant2Impl());
-		mapOfSerializers.put(JIVariant.class,new JIMarshalUnMarshalHelper.JIVariantImpl());
-		mapOfSerializers.put(Double.class,new JIMarshalUnMarshalHelper.DoubleImpl());
-		mapOfSerializers.put(Boolean.class,new JIMarshalUnMarshalHelper.BooleanImpl());
-		mapOfSerializers.put(Short.class,new JIMarshalUnMarshalHelper.ShortImpl());
-		mapOfSerializers.put(Integer.class,new JIMarshalUnMarshalHelper.IntegerImpl());
-		mapOfSerializers.put(Float.class,new JIMarshalUnMarshalHelper.FloatImpl());
-		mapOfSerializers.put(String.class,new JIMarshalUnMarshalHelper.StringImpl());
-		mapOfSerializers.put(UUID.class,new JIMarshalUnMarshalHelper.UUIDImpl());
-		mapOfSerializers.put(Byte.class,new JIMarshalUnMarshalHelper.ByteImpl());
-		mapOfSerializers.put(Long.class,new JIMarshalUnMarshalHelper.LongImpl());//LONG , 8 bytes, written as 4+4 in LE.
-		mapOfSerializers.put(Character.class,new JIMarshalUnMarshalHelper.CharacterImpl());
-		mapOfSerializers.put(JIInterfacePointer.class,new JIMarshalUnMarshalHelper.MInterfacePointerImpl());
-		mapOfSerializers.put(JIInterfacePointerBody.class,new JIMarshalUnMarshalHelper.MInterfacePointerImpl2());
-		mapOfSerializers.put(IJIDispatch.class,new JIMarshalUnMarshalHelper.IJIComObjectSerDer());
-		mapOfSerializers.put(IJIComObject.class,new JIMarshalUnMarshalHelper.IJIComObjectSerDer());
-		mapOfSerializers.put(JIPointer.class,new JIMarshalUnMarshalHelper.PointerImpl());
-		mapOfSerializers.put(JIStruct.class,new JIMarshalUnMarshalHelper.StructImpl());
-		mapOfSerializers.put(JIUnion.class,new JIMarshalUnMarshalHelper.UnionImpl());
-		mapOfSerializers.put(JIString.class,new JIMarshalUnMarshalHelper.JIStringImpl());
-		mapOfSerializers.put(JIUnsignedByte.class,new JIMarshalUnMarshalHelper.JIUnsignedByteImpl());
-		mapOfSerializers.put(JIUnsignedShort.class,new JIMarshalUnMarshalHelper.JIUnsignedShortImpl());
-		mapOfSerializers.put(JIUnsignedInteger.class,new JIMarshalUnMarshalHelper.JIUnsignedIntImpl());
-//		mapOfSerializers.put(IJIUnsigned.class,new JIMarshalUnMarshalHelper.JIUnsignedImpl());
-
+    static {
+        mapOfSerializers.put(Date.class, new JIMarshalUnMarshalHelper.DateImpl());
+        mapOfSerializers.put(JICurrency.class, new JIMarshalUnMarshalHelper.JICurrencyImpl());
+        mapOfSerializers.put(VariantBody.class, new JIMarshalUnMarshalHelper.JIVariant2Impl());
+        mapOfSerializers.put(JIVariant.class, new JIMarshalUnMarshalHelper.JIVariantImpl());
+        mapOfSerializers.put(Double.class, new JIMarshalUnMarshalHelper.DoubleImpl());
+        mapOfSerializers.put(Boolean.class, new JIMarshalUnMarshalHelper.BooleanImpl());
+        mapOfSerializers.put(Short.class, new JIMarshalUnMarshalHelper.ShortImpl());
+        mapOfSerializers.put(Integer.class, new JIMarshalUnMarshalHelper.IntegerImpl());
+        mapOfSerializers.put(Float.class, new JIMarshalUnMarshalHelper.FloatImpl());
+        mapOfSerializers.put(String.class, new JIMarshalUnMarshalHelper.StringImpl());
+        mapOfSerializers.put(UUID.class, new JIMarshalUnMarshalHelper.UUIDImpl());
+        mapOfSerializers.put(Byte.class, new JIMarshalUnMarshalHelper.ByteImpl());
+        mapOfSerializers.put(Long.class, new JIMarshalUnMarshalHelper.LongImpl());//LONG , 8 bytes, written as 4+4 in LE.
+        mapOfSerializers.put(Character.class, new JIMarshalUnMarshalHelper.CharacterImpl());
+        mapOfSerializers.put(JIInterfacePointer.class, new JIMarshalUnMarshalHelper.MInterfacePointerImpl());
+        mapOfSerializers.put(JIInterfacePointerBody.class, new JIMarshalUnMarshalHelper.MInterfacePointerImpl2());
+        mapOfSerializers.put(IJIDispatch.class, new JIMarshalUnMarshalHelper.IJIComObjectSerDer());
+        mapOfSerializers.put(IJIComObject.class, new JIMarshalUnMarshalHelper.IJIComObjectSerDer());
+        mapOfSerializers.put(JIPointer.class, new JIMarshalUnMarshalHelper.PointerImpl());
+        mapOfSerializers.put(JIStruct.class, new JIMarshalUnMarshalHelper.StructImpl());
+        mapOfSerializers.put(JIUnion.class, new JIMarshalUnMarshalHelper.UnionImpl());
+        mapOfSerializers.put(JIString.class, new JIMarshalUnMarshalHelper.JIStringImpl());
+        mapOfSerializers.put(JIUnsignedByte.class, new JIMarshalUnMarshalHelper.JIUnsignedByteImpl());
+        mapOfSerializers.put(JIUnsignedShort.class, new JIMarshalUnMarshalHelper.JIUnsignedShortImpl());
+        mapOfSerializers.put(JIUnsignedInteger.class, new JIMarshalUnMarshalHelper.JIUnsignedIntImpl());
+        mapOfSerializers.put(JIWbemObjectArray.class, new JIMarshalUnMarshalHelper.JIWbemObjectArrayImpl());
 	}
 
-	static byte[] readOctetArrayLE(NetworkDataRepresentation ndr, int length)
-	{
+    static byte[] readOctetArrayLE(NetworkDataRepresentation ndr, int length) {
 		byte[] bytes = new byte[8];
-		ndr.readOctetArray(bytes,0,8);
-		for (int i = 0;i < 4; i++)
-		{
+        ndr.readOctetArray(bytes, 0, 8);
+        for (int i = 0; i < 4; i++) {
 			byte t = bytes[i];
-			bytes[i] = bytes[7-i];
-			bytes[7-i] = t;
+            bytes[i] = bytes[7 - i];
+            bytes[7 - i] = t;
 		}
 		return bytes;
 	}
 
-	static void writeOctetArrayLE(NetworkDataRepresentation ndr, byte[] b)
-	{
-		for (int i = 0;i < b.length; i++)
-		{
+    static void writeOctetArrayLE(NetworkDataRepresentation ndr, byte[] b) {
+        for (int i = 0; i < b.length; i++) {
 			ndr.writeUnsignedSmall(b[b.length - i - 1]);
 		}
 	}
 
-	static void serialize(NetworkDataRepresentation ndr,Class c, Object value,List defferedPointers,int FLAG)
-	{
-		if (c.equals(JIArray.class))
-		{
-			((JIArray)value).encode(ndr,((JIArray)value).getArrayInstance(),defferedPointers,FLAG);
-		}
-		else
-		{
-			if ((c != IJIComObject.class || c != IJIDispatch.class) && value instanceof IJIComObject)
-			{
+    static void serialize(NetworkDataRepresentation ndr, Class c, Object value, List defferedPointers, int FLAG) {
+        if (c.equals(JIArray.class)) {
+            ((JIArray) value).encode(ndr, ((JIArray) value).getArrayInstance(), defferedPointers, FLAG);
+        } else {
+            if ((c != IJIComObject.class || c != IJIDispatch.class) && value instanceof IJIComObject) {
 				c = IJIComObject.class;
 			}
 
-			alignMemberWhileEncoding(ndr,c,value);
+            alignMemberWhileEncoding(ndr, c, value);
 
-			if (c.equals(JIString.class))
-			{
-				((JIString)value).encode(ndr,defferedPointers,FLAG);
+            if (c.equals(JIString.class)) {
+                ((JIString) value).encode(ndr, defferedPointers, FLAG);
 				return;
 			}
 
-			if (c.equals(JIPointer.class))
-			{
-				((JIPointer)value).encode(ndr,defferedPointers,FLAG);
+            if (c.equals(JIPointer.class)) {
+                ((JIPointer) value).encode(ndr, defferedPointers, FLAG);
 				return;
 			}
 
-			if (c.equals(JIStruct.class))
-			{
-				((JIStruct)value).encode(ndr,defferedPointers,FLAG);
+            if (c.equals(JIStruct.class)) {
+                ((JIStruct) value).encode(ndr, defferedPointers, FLAG);
 				return;
 			}
 
-			if (c.equals(JIUnion.class))
-			{
-				((JIUnion)value).encode(ndr,defferedPointers,FLAG);
+            if (c.equals(JIUnion.class)) {
+                ((JIUnion) value).encode(ndr, defferedPointers, FLAG);
 				return;
 			}
 
@@ -159,283 +138,222 @@ final class JIMarshalUnMarshalHelper {
 //			}
 
 
-			if (c.equals(JIInterfacePointer.class))
-			{
-				((JIInterfacePointer)value).encode(ndr,defferedPointers,FLAG);
+            if (c.equals(JIInterfacePointer.class)) {
+                ((JIInterfacePointer) value).encode(ndr, defferedPointers, FLAG);
 				return;
 			}
 
-			if (c.equals(JIVariant.class))
-			{
-				((JIVariant)value).encode(ndr,defferedPointers,FLAG);
+            if (c.equals(JIVariant.class)) {
+                ((JIVariant) value).encode(ndr, defferedPointers, FLAG);
 				return;
 			}
 
-			if (c.equals(VariantBody.class))
-			{
-				((VariantBody)value).encode(ndr,defferedPointers,FLAG);
+            if (c.equals(VariantBody.class)) {
+                ((VariantBody) value).encode(ndr, defferedPointers, FLAG);
 				return;
 			}
 
 
-			if (mapOfSerializers.get(c) == null)
-			{
-				throw new IllegalStateException(MessageFormat.format(JISystem.getLocalizedMessage(JIErrorCodes.JI_UTIL_SERDESER_NOT_FOUND),new String[]{c.toString()}));
+            if (mapOfSerializers.get(c) == null) {
+                throw new IllegalStateException(MessageFormat.format(JISystem.getLocalizedMessage(JIErrorCodes.JI_UTIL_SERDESER_NOT_FOUND), new String[]{c.toString()}));
 			}
-			((SerializerDeserializer)mapOfSerializers.get(c)).serializeData(ndr,value,defferedPointers,FLAG);
+            ((SerializerDeserializer) mapOfSerializers.get(c)).serializeData(ndr, value, defferedPointers, FLAG);
 		}
 	}
 
-	static void alignMemberWhileEncoding(NetworkDataRepresentation ndr,Class c, Object obj)
-	{
+    static void alignMemberWhileEncoding(NetworkDataRepresentation ndr, Class c, Object obj) {
 		double index = new Integer(ndr.getBuffer().getIndex()).doubleValue();
-		if (c.equals(JIStruct.class))
-		{
-			double align = new Integer(((JIStruct)obj).getAlignment()).doubleValue();
-			long i = (long)((i=Math.round(index%align)) == 0 ? 0 : align - i );
-			ndr.writeOctetArray(new byte[(int)i],0,(int)i);
-		}
-		else if (c.equals(JIUnion.class))
-		{
-			double align = new Integer(((JIUnion)obj).getAlignment()).doubleValue();
-			long i = (long)((i=Math.round(index%align)) == 0 ? 0 : align - i );
-			ndr.writeOctetArray(new byte[(int)i],0,(int)i);
-		}
-		else
-		if(/*c.equals(Character.class) || c.equals(Byte.class) ||*/ c.equals(Integer.class) || c.equals(Float.class) ||
-				c.equals(JIVariant.class)
+        if (c.equals(JIStruct.class)) {
+            double align = new Integer(((JIStruct) obj).getAlignment()).doubleValue();
+            long i = (long) ((i = Math.round(index % align)) == 0 ? 0 : align - i);
+            ndr.writeOctetArray(new byte[(int) i], 0, (int) i);
+        } else if (c.equals(JIUnion.class)) {
+            double align = new Integer(((JIUnion) obj).getAlignment()).doubleValue();
+            long i = (long) ((i = Math.round(index % align)) == 0 ? 0 : align - i);
+            ndr.writeOctetArray(new byte[(int) i], 0, (int) i);
+        } else if (/*c.equals(Character.class) || c.equals(Byte.class) ||*/c.equals(Integer.class) || c.equals(Float.class)
+                || c.equals(JIVariant.class)
 				|| c.equals(String.class)
-				|| c.equals(JIPointer.class))
-		{
+                || c.equals(JIPointer.class)) {
 			//align with 4 bytes
-			long i = (i=Math.round(index%4.0)) == 0 ? 0 : 4 - i ;
-			ndr.writeOctetArray(new byte[(int)i],0,(int)i);
-		}
-		else if (c.equals(Double.class) )
-		{
+            long i = (i = Math.round(index % 4.0)) == 0 ? 0 : 4 - i;
+            ndr.writeOctetArray(new byte[(int) i], 0, (int) i);
+        } else if (c.equals(Double.class)) {
 			//align with 8
-			long i = (i=Math.round(index%8.0)) == 0 ? 0 : 8 - i ;
-			ndr.writeOctetArray(new byte[(int)i],0,(int)i);
+            long i = (i = Math.round(index % 8.0)) == 0 ? 0 : 8 - i;
+            ndr.writeOctetArray(new byte[(int) i], 0, (int) i);
+        } else if (c.equals(Short.class)) {
+            long i = (i = Math.round(index % 2.0)) == 0 ? 0 : 2 - i;
+            ndr.writeOctetArray(new byte[(int) i], 0, (int) i);
 		}
-		else if (c.equals(Short.class))
-		{
-			long i = (i=Math.round(index%2.0)) == 0 ? 0 : 2 - i ;
-			ndr.writeOctetArray(new byte[(int)i],0,(int)i);
 		}
-	}
 
-	static void alignMemberWhileDecoding(NetworkDataRepresentation ndr,Class c, Object obj)
-	{
+    static void alignMemberWhileDecoding(NetworkDataRepresentation ndr, Class c, Object obj) {
 		double index = new Integer(ndr.getBuffer().getIndex()).doubleValue();
-		if (c.equals(JIStruct.class))
-		{
-			double align = new Integer(((JIStruct)obj).getAlignment()).doubleValue();
-			long i = (long)((i=Math.round(index%align)) == 0 ? 0 : align - i );
-			ndr.readOctetArray(new byte[(int)i],0,(int)i);
-		}
-		else if (c.equals(JIUnion.class))
-		{
-			double align = new Integer(((JIUnion)obj).getAlignment()).doubleValue();
-			long i = (long)((i=Math.round(index%align)) == 0 ? 0 : align - i );
-			ndr.readOctetArray(new byte[(int)i],0,(int)i);
-		}
-		else
-		if( c.equals(Integer.class) || c.equals(Float.class) ||
-				c.equals(JIVariant.class)
+        if (c.equals(JIStruct.class)) {
+            double align = new Integer(((JIStruct) obj).getAlignment()).doubleValue();
+            long i = (long) ((i = Math.round(index % align)) == 0 ? 0 : align - i);
+            ndr.readOctetArray(new byte[(int) i], 0, (int) i);
+        } else if (c.equals(JIUnion.class)) {
+            double align = new Integer(((JIUnion) obj).getAlignment()).doubleValue();
+            long i = (long) ((i = Math.round(index % align)) == 0 ? 0 : align - i);
+            ndr.readOctetArray(new byte[(int) i], 0, (int) i);
+        } else if (c.equals(Integer.class) || c.equals(Float.class)
+                || c.equals(JIVariant.class)
 				|| c.equals(String.class)
-				|| c.equals(JIPointer.class))
-		{
+                || c.equals(JIPointer.class)) {
 			//align with 4 bytes
-			long i = (i=Math.round(index%4.0)) == 0 ? 0 : 4 - i ;
-			ndr.readOctetArray(new byte[(int)i],0,(int)i);
-		}
-		else if (c.equals(Double.class))
-		{
+            long i = (i = Math.round(index % 4.0)) == 0 ? 0 : 4 - i;
+            ndr.readOctetArray(new byte[(int) i], 0, (int) i);
+        } else if (c.equals(Double.class)) {
 			//align with 8
-			long i = (i=Math.round(index%8.0)) == 0 ? 0 : 8 - i ;
-			ndr.readOctetArray(new byte[(int)i],0,(int)i);
+            long i = (i = Math.round(index % 8.0)) == 0 ? 0 : 8 - i;
+            ndr.readOctetArray(new byte[(int) i], 0, (int) i);
+        } else if (c.equals(Short.class)) {
+            long i = (i = Math.round(index % 2.0)) == 0 ? 0 : 2 - i;
+            ndr.readOctetArray(new byte[(int) i], 0, (int) i);
 		}
-		else if (c.equals(Short.class))
-		{
-			long i = (i=Math.round(index%2.0)) == 0 ? 0 : 2 - i ;
-			ndr.readOctetArray(new byte[(int)i],0,(int)i);
 		}
-	}
+
+    static Object deSerialize(NetworkDataRepresentation ndr, Object obj, List defferedPointers, int FLAG, Map additionalData) {
+        Class c = obj instanceof Class ? (Class) obj : obj.getClass();
+        if (c.equals(JIArray.class)) {
+            return ((JIArray) obj).decode(ndr, ((JIArray) obj).getArrayClass(), ((JIArray) obj).getDimensions(), defferedPointers, FLAG, additionalData);
+        } else {
+
+            alignMemberWhileDecoding(ndr, c, obj);
 
 
-	static Object deSerialize(NetworkDataRepresentation ndr,Object obj,List defferedPointers,int FLAG, Map additionalData)
-	{
-		Class c = obj instanceof Class ? (Class)obj : obj.getClass();
-		if(c.equals(JIArray.class))
-		{
-			return ((JIArray)obj).decode(ndr,((JIArray)obj).getArrayClass(),((JIArray)obj).getDimensions(),defferedPointers,FLAG,additionalData);
-		}
-		else
-		{
-
-			alignMemberWhileDecoding(ndr,c,obj);
-
-
-			if (c.equals(JIPointer.class))
-			{
-				JIPointer retVal = ((JIPointer)obj).decode(ndr,defferedPointers,FLAG,additionalData);
+            if (c.equals(JIPointer.class)) {
+                JIPointer retVal = ((JIPointer) obj).decode(ndr, defferedPointers, FLAG, additionalData);
 				return retVal;
 			}
 
-			if (c.equals(JIStruct.class))
-			{
-				JIStruct retVal = ((JIStruct)obj).decode(ndr,defferedPointers,FLAG,additionalData);
+            if (c.equals(JIStruct.class)) {
+                JIStruct retVal = ((JIStruct) obj).decode(ndr, defferedPointers, FLAG, additionalData);
 				return retVal;
 			}
 
-			if (c.equals(JIUnion.class))
-			{
-				JIUnion retVal = ((JIUnion)obj).decode(ndr,defferedPointers,FLAG,additionalData);
+            if (c.equals(JIUnion.class)) {
+                JIUnion retVal = ((JIUnion) obj).decode(ndr, defferedPointers, FLAG, additionalData);
 				return retVal;
 			}
 
-			if (c.equals(JIString.class))
-			{
-				JIString retVal = ((JIString)obj).decode(ndr,defferedPointers,FLAG,additionalData);
+            if (c.equals(JIString.class)) {
+                JIString retVal = ((JIString) obj).decode(ndr, defferedPointers, FLAG, additionalData);
 				return retVal;
 			}
 
 			//This will always be a class
-			if (obj.equals(JIInterfacePointer.class))
-			{
-				JIInterfacePointer retVal = JIInterfacePointer.decode(ndr,defferedPointers,FLAG,additionalData);
+            if (obj.equals(JIInterfacePointer.class)) {
+                JIInterfacePointer retVal = JIInterfacePointer.decode(ndr, defferedPointers, FLAG, additionalData);
 				return retVal;
 			}
 
 			//This will always be a class
-			if (obj.equals(JIVariant.class))
-			{
-				JIVariant retVal = JIVariant.decode(ndr,defferedPointers,FLAG,additionalData);
+            if (obj.equals(JIVariant.class)) {
+                JIVariant retVal = JIVariant.decode(ndr, defferedPointers, FLAG, additionalData);
 				return retVal;
 			}
 
 			//This will always be a class
-			if (obj.equals(VariantBody.class))
-			{
-				VariantBody retVal = VariantBody.decode(ndr,defferedPointers,FLAG,additionalData);
+            if (obj.equals(VariantBody.class)) {
+                VariantBody retVal = VariantBody.decode(ndr, defferedPointers, FLAG, additionalData);
 				return retVal;
 			}
 
-			if (mapOfSerializers.get(obj) == null)
-			{
-				throw new IllegalStateException(MessageFormat.format(JISystem.getLocalizedMessage(JIErrorCodes.JI_UTIL_SERDESER_NOT_FOUND),new String[]{obj.toString()}));
+            if (mapOfSerializers.get(obj) == null) {
+                throw new IllegalStateException(MessageFormat.format(JISystem.getLocalizedMessage(JIErrorCodes.JI_UTIL_SERDESER_NOT_FOUND), new String[]{obj.toString()}));
 			}
-			return ((SerializerDeserializer)mapOfSerializers.get(obj)).deserializeData(ndr,defferedPointers,additionalData,FLAG);
+            return ((SerializerDeserializer) mapOfSerializers.get(obj)).deserializeData(ndr, defferedPointers, additionalData, FLAG);
 		}
 
 	}
 
-
-
-	static int getLengthInBytes(Class c,Object obj, int FLAG)
-	{
-		if(obj != null && obj.getClass().equals(JIArray.class))
-		{
-			return ((JIArray)obj).getSizeOfAllElementsInBytes();
-		}
-		else
-		{
-			if ((c != IJIComObject.class || c != IJIDispatch.class) && obj instanceof IJIComObject)
-			{
+    static int getLengthInBytes(Class c, Object obj, int FLAG) {
+        if (obj != null && obj.getClass().equals(JIArray.class)) {
+            return ((JIArray) obj).getSizeOfAllElementsInBytes();
+        } else {
+            if ((c != IJIComObject.class || c != IJIDispatch.class) && obj instanceof IJIComObject) {
 				c = IJIComObject.class;
 			}
 
-			if (((SerializerDeserializer)mapOfSerializers.get(c)) == null)
-			{
-				throw new IllegalStateException(MessageFormat.format(JISystem.getLocalizedMessage(JIErrorCodes.JI_UTIL_SERDESER_NOT_FOUND),new String[]{c.toString()}));
+            if (((SerializerDeserializer) mapOfSerializers.get(c)) == null) {
+                throw new IllegalStateException(MessageFormat.format(JISystem.getLocalizedMessage(JIErrorCodes.JI_UTIL_SERDESER_NOT_FOUND), new String[]{c.toString()}));
 			}
-			return ((SerializerDeserializer)mapOfSerializers.get(c)).getLengthInBytes(obj,FLAG);
+            return ((SerializerDeserializer) mapOfSerializers.get(c)).getLengthInBytes(obj, FLAG);
 		}
 
 	}
 
-	private interface SerializerDeserializer
-	{
-		void serializeData(NetworkDataRepresentation ndr,Object value,List defferedPointers,int FLAG);
-		Object deserializeData(NetworkDataRepresentation ndr,List defferedPointers,Map additionalData,int FLAG);
-		int getLengthInBytes(Object value,int FLAG);
-	}
+    private interface SerializerDeserializer {
 
+        void serializeData(NetworkDataRepresentation ndr, Object value, List defferedPointers, int FLAG);
+
+        Object deserializeData(NetworkDataRepresentation ndr, List defferedPointers, Map additionalData, int FLAG);
+
+        int getLengthInBytes(Object value, int FLAG);
+    }
 
 	private static class PointerImpl implements SerializerDeserializer {
 
-		public void serializeData(NetworkDataRepresentation ndr,Object value,List defferedPointers,int FLAG)
-		{
+        public void serializeData(NetworkDataRepresentation ndr, Object value, List defferedPointers, int FLAG) {
 			throw new IllegalStateException(JISystem.getLocalizedMessage(JIErrorCodes.JI_UTIL_INCORRECT_CALL));
 		}
 
-		public Object deserializeData(NetworkDataRepresentation ndr,List defferedPointers, Map additionalData, int FLAG)
-		{
+        public Object deserializeData(NetworkDataRepresentation ndr, List defferedPointers, Map additionalData, int FLAG) {
 			throw new IllegalStateException(JISystem.getLocalizedMessage(JIErrorCodes.JI_UTIL_INCORRECT_CALL));
 		}
 
-		public int getLengthInBytes(Object value,int FLAG)
-		{
-			return ((JIPointer)value).getLength();
+        public int getLengthInBytes(Object value, int FLAG) {
+            return ((JIPointer) value).getLength();
 		}
-
 	}
 
 	private static class JIUnsignedIntImpl implements SerializerDeserializer {
 
-		public void serializeData(NetworkDataRepresentation ndr,Object value,List defferedPointers,int FLAG)
-		{
-			JIMarshalUnMarshalHelper.serialize(ndr,Integer.class,new Integer(((JIUnsignedInteger)value).getValue().intValue()),null,FLAG);
+        public void serializeData(NetworkDataRepresentation ndr, Object value, List defferedPointers, int FLAG) {
+            JIMarshalUnMarshalHelper.serialize(ndr, Integer.class, new Integer(((JIUnsignedInteger) value).getValue().intValue()), null, FLAG);
 		}
 
-		public Object deserializeData(NetworkDataRepresentation ndr,List defferedPointers, Map additionalData, int FLAG)
-		{
-			Integer b = (Integer)JIMarshalUnMarshalHelper.deSerialize(ndr,Integer.class,null,FLAG,additionalData);
-			return JIUnsignedFactory.getUnsigned(new Long((long)(b.intValue() & 0xFFFFFFFFL)),JIFlags.FLAG_REPRESENTATION_UNSIGNED_INT);
+        public Object deserializeData(NetworkDataRepresentation ndr, List defferedPointers, Map additionalData, int FLAG) {
+            Integer b = (Integer) JIMarshalUnMarshalHelper.deSerialize(ndr, Integer.class, null, FLAG, additionalData);
+            return JIUnsignedFactory.getUnsigned(new Long((long) (b.intValue() & 0xFFFFFFFFL)), JIFlags.FLAG_REPRESENTATION_UNSIGNED_INT);
 		}
 
-		public int getLengthInBytes(Object value,int FLAG)
-		{
+        public int getLengthInBytes(Object value, int FLAG) {
 			return 4;
 		}
-
 	}
 
 	private static class JIUnsignedByteImpl implements SerializerDeserializer {
 
-		public void serializeData(NetworkDataRepresentation ndr,Object value,List defferedPointers,int FLAG)
-		{
-			JIMarshalUnMarshalHelper.serialize(ndr,Byte.class,new Byte(((JIUnsignedByte)value).getValue().byteValue()),null,FLAG);
+        public void serializeData(NetworkDataRepresentation ndr, Object value, List defferedPointers, int FLAG) {
+            JIMarshalUnMarshalHelper.serialize(ndr, Byte.class, new Byte(((JIUnsignedByte) value).getValue().byteValue()), null, FLAG);
 		}
 
-		public Object deserializeData(NetworkDataRepresentation ndr,List defferedPointers, Map additionalData, int FLAG)
-		{
-			Byte b = (Byte)JIMarshalUnMarshalHelper.deSerialize(ndr,Byte.class,null,FLAG,additionalData);
-			return JIUnsignedFactory.getUnsigned(new Short((short)(b.byteValue() & 0xFF)),JIFlags.FLAG_REPRESENTATION_UNSIGNED_BYTE);
+        public Object deserializeData(NetworkDataRepresentation ndr, List defferedPointers, Map additionalData, int FLAG) {
+            Byte b = (Byte) JIMarshalUnMarshalHelper.deSerialize(ndr, Byte.class, null, FLAG, additionalData);
+            return JIUnsignedFactory.getUnsigned(new Short((short) (b.byteValue() & 0xFF)), JIFlags.FLAG_REPRESENTATION_UNSIGNED_BYTE);
 		}
 
-		public int getLengthInBytes(Object value,int FLAG)
-		{
+        public int getLengthInBytes(Object value, int FLAG) {
 			return 1;
 		}
-
 	}
 
 	private static class JIUnsignedShortImpl implements SerializerDeserializer {
 
-		public void serializeData(NetworkDataRepresentation ndr,Object value,List defferedPointers,int FLAG)
-		{
-			JIMarshalUnMarshalHelper.serialize(ndr,Short.class,new Short(((JIUnsignedShort)value).getValue().shortValue()),null,FLAG);
+        public void serializeData(NetworkDataRepresentation ndr, Object value, List defferedPointers, int FLAG) {
+            JIMarshalUnMarshalHelper.serialize(ndr, Short.class, new Short(((JIUnsignedShort) value).getValue().shortValue()), null, FLAG);
 		}
 
-		public Object deserializeData(NetworkDataRepresentation ndr,List defferedPointers, Map additionalData, int FLAG)
-		{
-			Short b = (Short)JIMarshalUnMarshalHelper.deSerialize(ndr,Short.class,null,FLAG,additionalData);
-			return JIUnsignedFactory.getUnsigned(new Integer((int)(b.shortValue() & 0xFFFF)), JIFlags.FLAG_REPRESENTATION_UNSIGNED_SHORT);
+        public Object deserializeData(NetworkDataRepresentation ndr, List defferedPointers, Map additionalData, int FLAG) {
+            Short b = (Short) JIMarshalUnMarshalHelper.deSerialize(ndr, Short.class, null, FLAG, additionalData);
+            return JIUnsignedFactory.getUnsigned(new Integer((int) (b.shortValue() & 0xFFFF)), JIFlags.FLAG_REPRESENTATION_UNSIGNED_SHORT);
 		}
 
-		public int getLengthInBytes(Object value,int FLAG)
-		{
+        public int getLengthInBytes(Object value, int FLAG) {
 			return 2;
 		}
 	}
@@ -554,69 +472,53 @@ final class JIMarshalUnMarshalHelper {
 //		}
 //
 //	}
-
 	private static class StructImpl implements SerializerDeserializer {
 
-		public void serializeData(NetworkDataRepresentation ndr,Object value,List defferedPointers,int FLAG)
-		{
+        public void serializeData(NetworkDataRepresentation ndr, Object value, List defferedPointers, int FLAG) {
 			throw new IllegalStateException(JISystem.getLocalizedMessage(JIErrorCodes.JI_UTIL_INCORRECT_CALL));
 		}
 
-		public Object deserializeData(NetworkDataRepresentation ndr,List defferedPointers, Map additionalData, int FLAG)
-		{
+        public Object deserializeData(NetworkDataRepresentation ndr, List defferedPointers, Map additionalData, int FLAG) {
 			throw new IllegalStateException(JISystem.getLocalizedMessage(JIErrorCodes.JI_UTIL_INCORRECT_CALL));
 		}
 
-		public int getLengthInBytes(Object value,int FLAG)
-		{
-			return ((JIStruct)value).getLength();
+        public int getLengthInBytes(Object value, int FLAG) {
+            return ((JIStruct) value).getLength();
 		}
-
 	}
 
 	private static class UnionImpl implements SerializerDeserializer {
 
-		public void serializeData(NetworkDataRepresentation ndr,Object value,List defferedPointers,int FLAG)
-		{
+        public void serializeData(NetworkDataRepresentation ndr, Object value, List defferedPointers, int FLAG) {
 			throw new IllegalStateException(JISystem.getLocalizedMessage(JIErrorCodes.JI_UTIL_INCORRECT_CALL));
 		}
 
-		public Object deserializeData(NetworkDataRepresentation ndr,List defferedPointers, Map additionalData, int FLAG)
-		{
+        public Object deserializeData(NetworkDataRepresentation ndr, List defferedPointers, Map additionalData, int FLAG) {
 			throw new IllegalStateException(JISystem.getLocalizedMessage(JIErrorCodes.JI_UTIL_INCORRECT_CALL));
 		}
 
-		public int getLengthInBytes(Object value,int FLAG)
-		{
-			return ((JIUnion)value).getLength();
+        public int getLengthInBytes(Object value, int FLAG) {
+            return ((JIUnion) value).getLength();
 		}
-
 	}
-
 
 	private static class IJIComObjectSerDer implements SerializerDeserializer {
 
-
-		public void serializeData(NetworkDataRepresentation ndr,Object value,List defferedPointers,int FLAG)
-		{
-			serialize(ndr, JIInterfacePointer.class, ((IJIComObject)value).internal_getInterfacePointer(), defferedPointers, FLAG);
+        public void serializeData(NetworkDataRepresentation ndr, Object value, List defferedPointers, int FLAG) {
+            serialize(ndr, JIInterfacePointer.class, ((IJIComObject) value).internal_getInterfacePointer(), defferedPointers, FLAG);
 		}
 
-		public Object deserializeData(NetworkDataRepresentation ndr,List defferedPointers, Map additionalData, int FLAG)
-		{
-			JISession session = (JISession)additionalData.get(JICallBuilder.CURRENTSESSION);
-			IJIComObject comObject = new JIComObjectImpl(session,(JIInterfacePointer)deSerialize(ndr, JIInterfacePointer.class, defferedPointers, FLAG, additionalData));
-			((ArrayList)additionalData.get(JICallBuilder.COMOBJECTS)).add(comObject);
+        public Object deserializeData(NetworkDataRepresentation ndr, List defferedPointers, Map additionalData, int FLAG) {
+            JISession session = (JISession) additionalData.get(JICallBuilder.CURRENTSESSION);
+            IJIComObject comObject = new JIComObjectImpl(session, (JIInterfacePointer) deSerialize(ndr, JIInterfacePointer.class, defferedPointers, FLAG, additionalData));
+            ((ArrayList) additionalData.get(JICallBuilder.COMOBJECTS)).add(comObject);
 			return comObject;
 		}
 
-
-		public int getLengthInBytes(Object value,int FLAG)
-		{
-			JIInterfacePointer interfacePointer = ((IJIComObject)value).internal_getInterfacePointer();
-			return ((JIInterfacePointer)interfacePointer).getLength();
+        public int getLengthInBytes(Object value, int FLAG) {
+            JIInterfacePointer interfacePointer = ((IJIComObject) value).internal_getInterfacePointer();
+            return ((JIInterfacePointer) interfacePointer).getLength();
 		}
-
 	}
 
 //	private static class IJIDispatchImpl implements SerializerDeserializer {
@@ -642,335 +544,297 @@ final class JIMarshalUnMarshalHelper {
 //
 //
 //	}
-
 	private static class JIVariant2Impl implements SerializerDeserializer {
-		public void serializeData(NetworkDataRepresentation ndr,Object value,List defferedPointers,int FLAG)
-		{
+
+        public void serializeData(NetworkDataRepresentation ndr, Object value, List defferedPointers, int FLAG) {
 			throw new IllegalStateException(JISystem.getLocalizedMessage(JIErrorCodes.JI_UTIL_INCORRECT_CALL));
 		}
 
-		public Object deserializeData(NetworkDataRepresentation ndr,List defferedPointers, Map additionalData, int FLAG)
-		{
+        public Object deserializeData(NetworkDataRepresentation ndr, List defferedPointers, Map additionalData, int FLAG) {
 			throw new IllegalStateException(JISystem.getLocalizedMessage(JIErrorCodes.JI_UTIL_INCORRECT_CALL));
 		}
 
-		public int getLengthInBytes(Object value,int FLAG)
-		{
-			return ((VariantBody)value).getLengthInBytes();
+        public int getLengthInBytes(Object value, int FLAG) {
+            return ((VariantBody) value).getLengthInBytes();
 		}
-
 	}
 
 	private static class JIVariantImpl implements SerializerDeserializer {
 
-		public void serializeData(NetworkDataRepresentation ndr,Object value,List defferedPointers,int FLAG)
-		{
+        public void serializeData(NetworkDataRepresentation ndr, Object value, List defferedPointers, int FLAG) {
 			throw new IllegalStateException(JISystem.getLocalizedMessage(JIErrorCodes.JI_UTIL_INCORRECT_CALL));
 		}
 
-		public Object deserializeData(NetworkDataRepresentation ndr,List defferedPointers, Map additionalData, int FLAG)
-		{
+        public Object deserializeData(NetworkDataRepresentation ndr, List defferedPointers, Map additionalData, int FLAG) {
 			throw new IllegalStateException(JISystem.getLocalizedMessage(JIErrorCodes.JI_UTIL_INCORRECT_CALL));
 		}
 
-		public int getLengthInBytes(Object value,int FLAG)
-		{
+        public int getLengthInBytes(Object value, int FLAG) {
 			//4 for pointer and rest for variant2
 			try {
-				return ((JIVariant)value).getLengthInBytes(FLAG);
+                return ((JIVariant) value).getLengthInBytes(FLAG);
 			} catch (JIException e) {
 				throw new JIRuntimeException(e.getErrorCode());
 			}
 		}
-
 	}
 
 	private static class CharacterImpl implements SerializerDeserializer {
-		public void serializeData(NetworkDataRepresentation ndr,Object value,List defferedPointers,int FLAG)
-		{
-			ndr.writeUnsignedSmall(((Character)value).charValue());
+
+        public void serializeData(NetworkDataRepresentation ndr, Object value, List defferedPointers, int FLAG) {
+            ndr.writeUnsignedSmall(((Character) value).charValue());
 		}
-		public Object deserializeData(NetworkDataRepresentation ndr,List defferedPointers, Map additionalData, int FLAG)
-		{
-			Character c = new Character((char)ndr.readUnsignedSmall());
+
+        public Object deserializeData(NetworkDataRepresentation ndr, List defferedPointers, Map additionalData, int FLAG) {
+            Character c = new Character((char) ndr.readUnsignedSmall());
 			return c;
 		}
 
-		public int getLengthInBytes(Object value,int FLAG)
-		{
+        public int getLengthInBytes(Object value, int FLAG) {
 			return 1;
 		}
-
 	}
 
 	private static class ByteImpl implements SerializerDeserializer {
-		public void serializeData(NetworkDataRepresentation ndr,Object value,List defferedPointers,int FLAG)
-		{
-			ndr.writeUnsignedSmall(((Byte)value).byteValue());
+
+        public void serializeData(NetworkDataRepresentation ndr, Object value, List defferedPointers, int FLAG) {
+            ndr.writeUnsignedSmall(((Byte) value).byteValue());
 		}
-		public Object deserializeData(NetworkDataRepresentation ndr,List defferedPointers, Map additionalData, int FLAG)
-		{
-			Byte c = new Byte((byte)ndr.readUnsignedSmall());
+
+        public Object deserializeData(NetworkDataRepresentation ndr, List defferedPointers, Map additionalData, int FLAG) {
+            Byte c = new Byte((byte) ndr.readUnsignedSmall());
 			return c;
 		}
 
-		public int getLengthInBytes(Object value,int FLAG)
-		{
+        public int getLengthInBytes(Object value, int FLAG) {
 			return 1;
 		}
-
 	}
 
 	private static class ShortImpl implements SerializerDeserializer {
-		public void serializeData(NetworkDataRepresentation ndr,Object value,List defferedPointers,int FLAG)
-		{
-			if (value == null)
-			{
+
+        public void serializeData(NetworkDataRepresentation ndr, Object value, List defferedPointers, int FLAG) {
+            if (value == null) {
 				value = new Short(Short.MIN_VALUE);
 			}
-			ndr.writeUnsignedShort(((Short)value).shortValue());
+            ndr.writeUnsignedShort(((Short) value).shortValue());
 
 
 		}
-		public Object deserializeData(NetworkDataRepresentation ndr,List defferedPointers, Map additionalData, int FLAG)
-		{
-			Short s = new Short((short)ndr.readUnsignedShort());
+
+        public Object deserializeData(NetworkDataRepresentation ndr, List defferedPointers, Map additionalData, int FLAG) {
+            Short s = new Short((short) ndr.readUnsignedShort());
 			return s;
 		}
 
-		public int getLengthInBytes(Object value,int FLAG)
+        public int getLengthInBytes(Object value, int FLAG) {
 		{
-			{
 				return 2 + 2;
 			}
 		}
-
 	}
 
 	private static class BooleanImpl implements SerializerDeserializer {
-		public void serializeData(NetworkDataRepresentation ndr,Object value,List defferedPointers,int FLAG)
-		{
-			if (value == null)
-			{
+
+        public void serializeData(NetworkDataRepresentation ndr, Object value, List defferedPointers, int FLAG) {
+            if (value == null) {
 				value = Boolean.FALSE;
 			}
 
-			if ((FLAG & JIFlags.FLAG_REPRESENTATION_VARIANT_BOOL) == JIFlags.FLAG_REPRESENTATION_VARIANT_BOOL)
-			{
-				ndr.writeUnsignedShort(((Boolean)value).booleanValue() == true ? 0xFFFF: 0x0000);
-			}
-			else
-			{
-				ndr.writeBoolean(((Boolean)value).booleanValue());
+            if ((FLAG & JIFlags.FLAG_REPRESENTATION_VARIANT_BOOL) == JIFlags.FLAG_REPRESENTATION_VARIANT_BOOL) {
+                ndr.writeUnsignedShort(((Boolean) value).booleanValue() == true ? 0xFFFF : 0x0000);
+            } else {
+                ndr.writeBoolean(((Boolean) value).booleanValue());
 			}
 
 		}
-		public Object deserializeData(NetworkDataRepresentation ndr,List defferedPointers, Map additionalData, int FLAG)
-		{
+
+        public Object deserializeData(NetworkDataRepresentation ndr, List defferedPointers, Map additionalData, int FLAG) {
 			Boolean b = null;
-			if ((FLAG & JIFlags.FLAG_REPRESENTATION_VARIANT_BOOL) == JIFlags.FLAG_REPRESENTATION_VARIANT_BOOL)
-			{
+            if ((FLAG & JIFlags.FLAG_REPRESENTATION_VARIANT_BOOL) == JIFlags.FLAG_REPRESENTATION_VARIANT_BOOL) {
 				int s = ndr.readUnsignedShort();
-				b = s != 0 ? Boolean.TRUE:Boolean.FALSE;
-			}
-			else
-			{
+                b = s != 0 ? Boolean.TRUE : Boolean.FALSE;
+            } else {
 				b = Boolean.valueOf(ndr.readBoolean());
 			}
 
 			return b;
 		}
-		public int getLengthInBytes(Object value,int FLAG)
-		{
-			if ((FLAG & JIFlags.FLAG_REPRESENTATION_VARIANT_BOOL) == JIFlags.FLAG_REPRESENTATION_VARIANT_BOOL)
-			{
+
+        public int getLengthInBytes(Object value, int FLAG) {
+            if ((FLAG & JIFlags.FLAG_REPRESENTATION_VARIANT_BOOL) == JIFlags.FLAG_REPRESENTATION_VARIANT_BOOL) {
 				return 2;
-			}
-			else
-			{
+            } else {
 				return 1;
 			}
 		}
 	}
 
 	private static class IntegerImpl implements SerializerDeserializer {
-		public void serializeData(NetworkDataRepresentation ndr,Object value,List defferedPointers,int FLAG)
-		{
-			if (value == null)
-			{
+
+        public void serializeData(NetworkDataRepresentation ndr, Object value, List defferedPointers, int FLAG) {
+            if (value == null) {
 				value = new Integer(Integer.MIN_VALUE);
 			}
-			ndr.writeUnsignedLong(((Integer)value).intValue());
+            ndr.writeUnsignedLong(((Integer) value).intValue());
 		}
-		public Object deserializeData(NetworkDataRepresentation ndr,List defferedPointers, Map additionalData, int FLAG)
-		{
+
+        public Object deserializeData(NetworkDataRepresentation ndr, List defferedPointers, Map additionalData, int FLAG) {
 			return new Integer(ndr.readUnsignedLong());
 		}
-		public int getLengthInBytes(Object value,int FLAG)
+
+        public int getLengthInBytes(Object value, int FLAG) {
 		{
-			{
 				return 4;
 			}
 		}
-
 	}
 
 	private static class LongImpl implements SerializerDeserializer {
-		public void serializeData(NetworkDataRepresentation ndr,Object value,List defferedPointers,int FLAG)
-		{
-			if (value == null)
-			{
+
+        public void serializeData(NetworkDataRepresentation ndr, Object value, List defferedPointers, int FLAG) {
+            if (value == null) {
 				value = new Long(Long.MIN_VALUE);
 			}
 			ndr.getBuffer().align(8);
-			Encdec.enc_uint64le(((Long)value).longValue(),ndr.getBuffer().getBuffer(),ndr.getBuffer().getIndex());
+            Encdec.enc_uint64le(((Long) value).longValue(), ndr.getBuffer().getBuffer(), ndr.getBuffer().getIndex());
 			ndr.getBuffer().advance(8);
 		}
 
-		public Object deserializeData(NetworkDataRepresentation ndr,List defferedPointers, Map additionalData, int FLAG)
-		{
+        public Object deserializeData(NetworkDataRepresentation ndr, List defferedPointers, Map additionalData, int FLAG) {
 			ndr.getBuffer().align(8);
-			Long b = new Long(Encdec.dec_uint64le(ndr.getBuffer().getBuffer(),ndr.getBuffer().getIndex()));
+            Long b = new Long(Encdec.dec_uint64le(ndr.getBuffer().getBuffer(), ndr.getBuffer().getIndex()));
 			ndr.getBuffer().advance(8);
 			return b;
 		}
 
-		public int getLengthInBytes(Object value,int FLAG)
-		{
+        public int getLengthInBytes(Object value, int FLAG) {
 			return 8;
 		}
-
 	}
 
 	private static class DoubleImpl implements SerializerDeserializer {
-		public void serializeData(NetworkDataRepresentation ndr,Object value,List defferedPointers,int FLAG)
-		{
-			if (value == null)
-			{
+
+        public void serializeData(NetworkDataRepresentation ndr, Object value, List defferedPointers, int FLAG) {
+            if (value == null) {
 				value = new Double(Double.NaN);
 			}
 
 			ndr.getBuffer().align(8);
-			Encdec.enc_doublele(((Double)value).doubleValue(), ndr.getBuffer().getBuffer(),ndr.getBuffer().getIndex());
+            Encdec.enc_doublele(((Double) value).doubleValue(), ndr.getBuffer().getBuffer(), ndr.getBuffer().getIndex());
 			ndr.getBuffer().advance(8);
 
 		}
-		public Object deserializeData(NetworkDataRepresentation ndr,List defferedPointers, Map additionalData, int FLAG)
-		{
+
+        public Object deserializeData(NetworkDataRepresentation ndr, List defferedPointers, Map additionalData, int FLAG) {
 			ndr.getBuffer().align(8);
-			Double b = new Double(Encdec.dec_doublele(ndr.getBuffer().getBuffer(),ndr.getBuffer().getIndex()));
+            Double b = new Double(Encdec.dec_doublele(ndr.getBuffer().getBuffer(), ndr.getBuffer().getIndex()));
 			ndr.getBuffer().advance(8);
 
 
 			return b;
 		}
-		public int getLengthInBytes(Object value,int FLAG)
+
+        public int getLengthInBytes(Object value, int FLAG) {
 		{
-			{
 				return 8;
 			}
 		}
-
 	}
 
 	private static class JICurrencyImpl implements SerializerDeserializer {
-		public void serializeData(NetworkDataRepresentation ndr,Object value,List defferedPointers,int FLAG)
-		{
-			JICurrency currency = (JICurrency)value;
+
+        public void serializeData(NetworkDataRepresentation ndr, Object value, List defferedPointers, int FLAG) {
+            JICurrency currency = (JICurrency) value;
 
 			int units = currency.getUnits();
 			int fractionalUnits = currency.getFractionalUnits();
 
-			double p = units + fractionalUnits/10000;
+            double p = units + fractionalUnits / 10000;
 			
 			//scale the units by 10000 to remove the decimal and take two's compliment.
-			int toSend = ~((int)(p * 10000.00)) + 1;
+            int toSend = ~((int) (p * 10000.00)) + 1;
 
-			String toSend2 =(Integer.toHexString(toSend));
+            String toSend2 = (Integer.toHexString(toSend));
 			int hibytes = 0;
 			int lowbytes = 0;
-			if (toSend2.length() > 8)
-			{
-				lowbytes = Integer.valueOf(toSend2.substring(8),16).intValue();
-				hibytes = Integer.valueOf(toSend2.substring(0,8),16).intValue();
-			}
-			else
-			{
+            if (toSend2.length() > 8) {
+                lowbytes = Integer.valueOf(toSend2.substring(8), 16).intValue();
+                hibytes = Integer.valueOf(toSend2.substring(0, 8), 16).intValue();
+            } else {
 				lowbytes = toSend;
-				if (toSend < 0)
-				{
+                if (toSend < 0) {
 					hibytes = -1;
 				}
 			}
 
 //			now align by 8 bytes, since this is struct has a hyper, which I don't support yet
 			double index = new Integer(ndr.getBuffer().getIndex()).doubleValue();
-			long i = (i=Math.round(index%8.0)) == 0 ? 0 : 8 - i ;
-			ndr.writeOctetArray(new byte[(int)i],0,(int)i);
+            long i = (i = Math.round(index % 8.0)) == 0 ? 0 : 8 - i;
+            ndr.writeOctetArray(new byte[(int) i], 0, (int) i);
 
 			JIStruct struct = new JIStruct();
 			try {
 				struct.addMember(new Integer(lowbytes));
 				struct.addMember(new Integer(hibytes));
 			} catch (JIException e) {
-
 			}
-			serialize(ndr,JIStruct.class,struct,null,FLAG);
+            serialize(ndr, JIStruct.class, struct, null, FLAG);
 
 		}
-		public Object deserializeData(NetworkDataRepresentation ndr,List defferedPointers, Map additionalData, int FLAG)
-		{
+
+        public Object deserializeData(NetworkDataRepresentation ndr, List defferedPointers, Map additionalData, int FLAG) {
 			//first align
 			double index = new Integer(ndr.getBuffer().getIndex()).doubleValue();
-			long i = (i=Math.round(index%8.0)) == 0 ? 0 : 8 - i ;
-			ndr.readOctetArray(new byte[(int)i],0,(int)i);
+            long i = (i = Math.round(index % 8.0)) == 0 ? 0 : 8 - i;
+            ndr.readOctetArray(new byte[(int) i], 0, (int) i);
 
 			//now read the low byte
 			int lowbyte = ndr.readUnsignedLong();
 			//hibyte
 			int hibyte = ndr.readUnsignedLong();
-			if(hibyte < 0)
-			{
+            if (hibyte < 0) {
 				lowbyte = -1 * Math.abs(lowbyte);
 			}
 
 			//String newValue = Integer.toHexString(hibyte) + Integer.toHexString(lowbyte);
 			//long value = Long.parseLong(newValue,16);
-			return new JICurrency((int)((lowbyte - lowbyte%10000)/10000),(int)(lowbyte%10000));
+            return new JICurrency((int) ((lowbyte - lowbyte % 10000) / 10000), (int) (lowbyte % 10000));
 
 
 		}
-		public int getLengthInBytes(Object value,int FLAG)
+
+        public int getLengthInBytes(Object value, int FLAG) {
 		{
-			{
 				return 4 + 4;
 			}
 		}
 	}
 	//will only get called from a variant.
+
 	private static class DateImpl implements SerializerDeserializer {
-		public void serializeData(NetworkDataRepresentation ndr,Object value,List defferedPointers,int FLAG)
-		{
+
+        public void serializeData(NetworkDataRepresentation ndr, Object value, List defferedPointers, int FLAG) {
 //			if (value == null && FLAG == JIFlags.FLAG_REPRESENTATION_ARRAY)
 //			{
 //				value = new Double(Double.NaN);
 //			}
 
 			ndr.getBuffer().align(8);
-			Encdec.enc_doublele(convertMillisecondsToWindowsTime(((Date)value).getTime()), ndr.getBuffer().getBuffer(),ndr.getBuffer().getIndex());
+            Encdec.enc_doublele(convertMillisecondsToWindowsTime(((Date) value).getTime()), ndr.getBuffer().getBuffer(), ndr.getBuffer().getIndex());
 			ndr.getBuffer().advance(8);
 
 		}
-		public Object deserializeData(NetworkDataRepresentation ndr,List defferedPointers, Map additionalData, int FLAG)
-		{
+
+        public Object deserializeData(NetworkDataRepresentation ndr, List defferedPointers, Map additionalData, int FLAG) {
 			ndr.getBuffer().align(8);
-			Date b = new Date(convertWindowsTimeToMilliseconds(Encdec.dec_doublele(ndr.getBuffer().getBuffer(),ndr.getBuffer().getIndex())));
+            Date b = new Date(convertWindowsTimeToMilliseconds(Encdec.dec_doublele(ndr.getBuffer().getBuffer(), ndr.getBuffer().getIndex())));
 			ndr.getBuffer().advance(8);
 			return b;
 		}
-		public int getLengthInBytes(Object value,int FLAG)
+
+        public int getLengthInBytes(Object value, int FLAG) {
 		{
-			{
 				return 8;
 			}
 		}
@@ -1004,7 +868,6 @@ final class JIMarshalUnMarshalHelper {
 			return result;
 		}// convertWindowsTimeToMilliseconds()
 
-
 		/**FROM JACAOB 1.10. www.danadler.com.
 		 * Convert a Java time to a COM time.
 		 *
@@ -1018,61 +881,54 @@ final class JIMarshalUnMarshalHelper {
 			// code from jacobgen:
 			Calendar cal = Calendar.getInstance();
 			cal.setTimeInMillis(milliseconds);
-			milliseconds += (cal.get(Calendar.ZONE_OFFSET) + cal
-					.get(Calendar.DST_OFFSET)); // add GMT offset
+            milliseconds += (cal.get(Calendar.ZONE_OFFSET) + cal.get(Calendar.DST_OFFSET)); // add GMT offset
 			result = (milliseconds / 86400000D) + 25569D;
 
 			return result;
 		}//convertMillisecondsToWindowsTime()
-
 	}
 
 	private static class FloatImpl implements SerializerDeserializer {
-		public void serializeData(NetworkDataRepresentation ndr,Object value,List defferedPointers,int FLAG)
-		{
-			if (value == null)
-			{
+
+        public void serializeData(NetworkDataRepresentation ndr, Object value, List defferedPointers, int FLAG) {
+            if (value == null) {
 				value = new Float(Float.NaN);
 			}
 			ndr.getBuffer().align(4);
-			Encdec.enc_floatle(((Float)value).floatValue(), ndr.getBuffer().getBuffer(),ndr.getBuffer().getIndex());
+            Encdec.enc_floatle(((Float) value).floatValue(), ndr.getBuffer().getBuffer(), ndr.getBuffer().getIndex());
 			ndr.getBuffer().advance(4);
 
 		}
-		public Object deserializeData(NetworkDataRepresentation ndr,List defferedPointers, Map additionalData, int FLAG)
-		{
+
+        public Object deserializeData(NetworkDataRepresentation ndr, List defferedPointers, Map additionalData, int FLAG) {
 			ndr.getBuffer().align(4);
-			Float b = new Float(Encdec.dec_floatle(ndr.getBuffer().getBuffer(),ndr.getBuffer().getIndex()));
+            Float b = new Float(Encdec.dec_floatle(ndr.getBuffer().getBuffer(), ndr.getBuffer().getIndex()));
 			ndr.getBuffer().advance(4);
 
 			return b;
 		}
-		public int getLengthInBytes(Object value,int FLAG)
+
+        public int getLengthInBytes(Object value, int FLAG) {
 		{
-			{
 				return 4;
 			}
 
 		}
-
 	}
 
 	private static class StringImpl implements SerializerDeserializer {
-		public void serializeData(NetworkDataRepresentation ndr,Object value,List defferedPointers,int FLAG)
-		{
-			if ((FLAG & JIFlags.FLAG_REPRESENTATION_VALID_STRING) != JIFlags.FLAG_REPRESENTATION_VALID_STRING)
-			{
+
+        public void serializeData(NetworkDataRepresentation ndr, Object value, List defferedPointers, int FLAG) {
+            if ((FLAG & JIFlags.FLAG_REPRESENTATION_VALID_STRING) != JIFlags.FLAG_REPRESENTATION_VALID_STRING) {
 				throw new JIRuntimeException(JIErrorCodes.JI_UTIL_STRING_INVALID);
 			}
 
-			String str = ((String)value);
-			if (str == null)
-			{
+            String str = ((String) value);
+            if (str == null) {
 				str = "";
 			}
 			//BSTR encoding
-			if ((FLAG & JIFlags.FLAG_REPRESENTATION_STRING_BSTR) == JIFlags.FLAG_REPRESENTATION_STRING_BSTR)
-			{
+            if ((FLAG & JIFlags.FLAG_REPRESENTATION_STRING_BSTR) == JIFlags.FLAG_REPRESENTATION_STRING_BSTR) {
 				byte[] strBytes = null;
 				try {
 					strBytes = str.getBytes("UTF-16LE");
@@ -1081,36 +937,31 @@ final class JIMarshalUnMarshalHelper {
 				}
 				//NDR representation Max count , then offset, then, actual count
 				//length of String (Maximum count)
-				ndr.writeUnsignedLong(strBytes.length/2);
+                ndr.writeUnsignedLong(strBytes.length / 2);
 				//last index of String (length in bytes)
 				ndr.writeUnsignedLong(strBytes.length);
 				//length of String Again !! (Actual count)
-				ndr.writeUnsignedLong(strBytes.length/2);
+                ndr.writeUnsignedLong(strBytes.length / 2);
 				//write an array of unsigned shorts
 				int i = 0;
-				while (i < strBytes.length)
-				{
+                while (i < strBytes.length) {
 					//ndr.writeUnsignedShort(str.charAt(i));
 					ndr.writeUnsignedSmall(strBytes[i]);
 					i++;
 				}
 
-			}
-			else //Normal String
-			if ((FLAG & JIFlags.FLAG_REPRESENTATION_STRING_LPCTSTR) == JIFlags.FLAG_REPRESENTATION_STRING_LPCTSTR)
-			{
+            } else //Normal String
+            if ((FLAG & JIFlags.FLAG_REPRESENTATION_STRING_LPCTSTR) == JIFlags.FLAG_REPRESENTATION_STRING_LPCTSTR) {
 				// the String is written as "short" so length is strlen/2+1
-				int strlen = (int)Math.round(str.length()/2.0);
+                int strlen = (int) Math.round(str.length() / 2.0);
 
 				ndr.writeUnsignedLong(strlen + 1);
 				ndr.writeUnsignedLong(0);
 				ndr.writeUnsignedLong(strlen + 1);
-				if (str.length() != 0)
-				{
-					ndr.writeCharacterArray(str.toCharArray(),0,str.length());
+                if (str.length() != 0) {
+                    ndr.writeCharacterArray(str.toCharArray(), 0, str.length());
 					//odd length
-					if (str.length()%2 != 0)
-					{
+                    if (str.length() % 2 != 0) {
 						//add a 0
 						ndr.writeUnsignedSmall(0);
 					}
@@ -1118,10 +969,7 @@ final class JIMarshalUnMarshalHelper {
 
 				//null termination
 				ndr.writeUnsignedShort(0);
-			}
-			else
-				if ((FLAG & JIFlags.FLAG_REPRESENTATION_STRING_LPWSTR) == JIFlags.FLAG_REPRESENTATION_STRING_LPWSTR)
-				{
+            } else if ((FLAG & JIFlags.FLAG_REPRESENTATION_STRING_LPWSTR) == JIFlags.FLAG_REPRESENTATION_STRING_LPWSTR) {
 
 					byte[] strBytes = null;
 					try {
@@ -1131,13 +979,12 @@ final class JIMarshalUnMarshalHelper {
 					}
 
 					//bytes + 1
-					ndr.writeUnsignedLong(strBytes.length/2 + 1);
+                ndr.writeUnsignedLong(strBytes.length / 2 + 1);
 					ndr.writeUnsignedLong(0);
-					ndr.writeUnsignedLong(strBytes.length/2 + 1);
+                ndr.writeUnsignedLong(strBytes.length / 2 + 1);
 					//write an array of unsigned shorts
 					int i = 0;
-					while (i < strBytes.length)
-					{
+                while (i < strBytes.length) {
 						//ndr.writeUnsignedShort(str.charAt(i));
 						ndr.writeUnsignedSmall(strBytes[i]);
 						i++;
@@ -1162,73 +1009,58 @@ final class JIMarshalUnMarshalHelper {
 
 		}
 
-		public Object deserializeData(NetworkDataRepresentation ndr,List defferedPointers, Map additionalData, int FLAG)
-		{
-			if ((FLAG & JIFlags.FLAG_REPRESENTATION_VALID_STRING) != JIFlags.FLAG_REPRESENTATION_VALID_STRING)
-			{
+        public Object deserializeData(NetworkDataRepresentation ndr, List defferedPointers, Map additionalData, int FLAG) {
+            if ((FLAG & JIFlags.FLAG_REPRESENTATION_VALID_STRING) != JIFlags.FLAG_REPRESENTATION_VALID_STRING) {
 				throw new JIRuntimeException(JIErrorCodes.JI_UTIL_STRING_INVALID);
 			}
 			int retVal = -1;
 			//StringBuffer buffer = new StringBuffer();
 			String retString = null;
-			try
-			{
+            try {
 
 				//BSTR Decoding
-				if ((FLAG & JIFlags.FLAG_REPRESENTATION_STRING_BSTR) == JIFlags.FLAG_REPRESENTATION_STRING_BSTR)
-				{
+                if ((FLAG & JIFlags.FLAG_REPRESENTATION_STRING_BSTR) == JIFlags.FLAG_REPRESENTATION_STRING_BSTR) {
 					//Read for user
 					ndr.readUnsignedLong();//eating max length
 					ndr.readUnsignedLong();//eating length in bytes
 					int actuallength = ndr.readUnsignedLong() * 2;
 					byte[] buffer = new byte[actuallength];
 					int i = 0;
-					while (i < actuallength)
-					{
+                    while (i < actuallength) {
 						retVal = ndr.readUnsignedSmall();
-						buffer[i] = (byte)retVal;
+                        buffer[i] = (byte) retVal;
 						i++;
 					}
 
-					retString = new String(buffer,"UTF-16LE");
+                    retString = new String(buffer, "UTF-16LE");
 
-				}
-				else //Normal String
-				if ((FLAG & JIFlags.FLAG_REPRESENTATION_STRING_LPCTSTR) == JIFlags.FLAG_REPRESENTATION_STRING_LPCTSTR)
+                } else //Normal String
+                if ((FLAG & JIFlags.FLAG_REPRESENTATION_STRING_LPCTSTR) == JIFlags.FLAG_REPRESENTATION_STRING_LPCTSTR) {
 				{
-					{
 						int actuallength = ndr.readUnsignedLong(); //max length
-						if (actuallength == 0)
-						{
+                        if (actuallength == 0) {
 							return null;
 						}
 
 						ndr.readUnsignedLong();//eating offset
 						ndr.readUnsignedLong();//eating actuallength again
 						//now read array.
-						char[] ret = new char[actuallength*2 - 2];
+                        char[] ret = new char[actuallength * 2 - 2];
 						//read including the unsigned short (null chars)
-						ndr.readCharacterArray(ret,0,actuallength*2 - 2);
-						if (ret[ret.length - 1] == '0')
-						{
-							retString = new String(ret,0,ret.length - 1);
-						}
-						else
-						{
+                        ndr.readCharacterArray(ret, 0, actuallength * 2 - 2);
+                        if (ret[ret.length - 1] == '0') {
+                            retString = new String(ret, 0, ret.length - 1);
+                        } else {
 							retString = new String(ret);
 						}
 
 						ndr.readUnsignedShort();
 					}
-				}
-				else
-				if ((FLAG & JIFlags.FLAG_REPRESENTATION_STRING_LPWSTR) == JIFlags.FLAG_REPRESENTATION_STRING_LPWSTR)
-				{
+                } else if ((FLAG & JIFlags.FLAG_REPRESENTATION_STRING_LPWSTR) == JIFlags.FLAG_REPRESENTATION_STRING_LPWSTR) {
 
 					{
 						int maxlength = ndr.readUnsignedLong();
-						if (maxlength == 0)
-						{
+                        if (maxlength == 0) {
 							return null;
 						}
 						ndr.readUnsignedLong();//eating offset
@@ -1236,18 +1068,16 @@ final class JIMarshalUnMarshalHelper {
 						byte buffer[] = new byte[actuallength - 2];
 						int i = 0;
 						//last 2 bytes , null termination will be eaten outside the loop
-						while (i < actuallength - 2)
-						{
+                        while (i < actuallength - 2) {
 							retVal = ndr.readUnsignedSmall();
-							buffer[i] = (byte)retVal;
+                            buffer[i] = (byte) retVal;
 							i++;
 						}
-						if (actuallength != 0)
-						{
+                        if (actuallength != 0) {
 							ndr.readUnsignedShort();
 						}
 
-						retString = new String(buffer,"UTF-16LE");
+                        retString = new String(buffer, "UTF-16LE");
 
 					}
 
@@ -1259,130 +1089,135 @@ final class JIMarshalUnMarshalHelper {
 			return retString;
 		}
 
-		public int getLengthInBytes(Object value,int FLAG)
-		{
+        public int getLengthInBytes(Object value, int FLAG) {
 			//rough estimate, this will vary from string to string
 
 			int length = 4 + 4 + 4; //max len, offset ,actual length
 
-			if (!((FLAG & JIFlags.FLAG_REPRESENTATION_STRING_BSTR) == JIFlags.FLAG_REPRESENTATION_STRING_BSTR))
-			{
+            if (!((FLAG & JIFlags.FLAG_REPRESENTATION_STRING_BSTR) == JIFlags.FLAG_REPRESENTATION_STRING_BSTR)) {
 				length = length + 2; //adding null termination
 			}
 
-			if ((FLAG & JIFlags.FLAG_REPRESENTATION_STRING_LPCTSTR) == JIFlags.FLAG_REPRESENTATION_STRING_LPCTSTR)
+            if ((FLAG & JIFlags.FLAG_REPRESENTATION_STRING_LPCTSTR) == JIFlags.FLAG_REPRESENTATION_STRING_LPCTSTR) {
+                length = length + ((String) value).length(); //this is only a character array, no unicode, each char is writen in 1 byte "abcd" --> ab, cd ,00 ; "abcde" --> ab,cd,e0, 00
+                if (!(((String) value).length() % 2 == 0)) //odd
 			{
-				length = length + ((String)value).length(); //this is only a character array, no unicode, each char is writen in 1 byte "abcd" --> ab, cd ,00 ; "abcde" --> ab,cd,e0, 00
-				if (!(((String)value).length()%2 == 0)) //odd
-				{
 					length++;
 				}
-			}
-			else
-			{
+            } else {
 //				if (value == null)
 //				{
 //					int i = 0;
 //				}
-				length = length + ((String)value).length()*2; //these are both unicode (utf-16le)
+                length = length + ((String) value).length() * 2; //these are both unicode (utf-16le)
 			}
 
 
 			return length;
 		}
-
 	}
 
-
 	private static class JIStringImpl implements SerializerDeserializer {
-		public void serializeData(NetworkDataRepresentation ndr,Object value,List defferedPointers,int FLAG)
-		{
+
+        public void serializeData(NetworkDataRepresentation ndr, Object value, List defferedPointers, int FLAG) {
 			throw new IllegalStateException(JISystem.getLocalizedMessage(JIErrorCodes.JI_UTIL_INCORRECT_CALL));
 		}
 
-		public Object deserializeData(NetworkDataRepresentation ndr,List defferedPointers, Map additionalData, int FLAG)
-		{
+        public Object deserializeData(NetworkDataRepresentation ndr, List defferedPointers, Map additionalData, int FLAG) {
 			throw new IllegalStateException(JISystem.getLocalizedMessage(JIErrorCodes.JI_UTIL_INCORRECT_CALL));
 		}
 
-		public int getLengthInBytes(Object value,int FLAG)
-		{
+        public int getLengthInBytes(Object value, int FLAG) {
 			int length = 4;
 
-			if (((JIString)value).getString() == null)
-			{
+            if (((JIString) value).getString() == null) {
 				return length;
 			}
 
 
 			//for LPWSTR and BSTR adding 2 for the null character.
-			length = length + (((JIString)value).getType() == JIFlags.FLAG_REPRESENTATION_STRING_LPCTSTR ? 0 : 2);
+            length = length + (((JIString) value).getType() == JIFlags.FLAG_REPRESENTATION_STRING_LPCTSTR ? 0 : 2);
 			//Pointer referentId --> USER
-			return length + JIMarshalUnMarshalHelper.getLengthInBytes(String.class,((JIString)value).getString(),((JIString)value).getType() | FLAG);
+            return length + JIMarshalUnMarshalHelper.getLengthInBytes(String.class, ((JIString) value).getString(), ((JIString) value).getType() | FLAG);
 		}
-
-
 	}
 
-
 	private static class UUIDImpl implements SerializerDeserializer {
-		public void serializeData(NetworkDataRepresentation ndr,Object value,List defferedPointers,int FLAG)
-		{
+
+        public void serializeData(NetworkDataRepresentation ndr, Object value, List defferedPointers, int FLAG) {
 			try {
-				((UUID)value).encode(ndr,ndr.getBuffer());
+                ((UUID) value).encode(ndr, ndr.getBuffer());
 			} catch (NdrException e) {
-				JISystem.getLogger().throwing("UUIDImpl","serializeData",e);
+                JISystem.getLogger().throwing("UUIDImpl", "serializeData", e);
 			}
 		}
-		public Object deserializeData(NetworkDataRepresentation ndr,List defferedPointers, Map additionalData, int FLAG)
-		{
+
+        public Object deserializeData(NetworkDataRepresentation ndr, List defferedPointers, Map additionalData, int FLAG) {
 			UUID ret = new UUID();
 			try {
-				ret.decode(ndr,ndr.getBuffer());
+                ret.decode(ndr, ndr.getBuffer());
 			} catch (NdrException e) {
-				JISystem.getLogger().throwing("UUIDImpl","deserializeData",e);
+                JISystem.getLogger().throwing("UUIDImpl", "deserializeData", e);
 				ret = null;
 			}
 			return ret;
 		}
 
-		public int getLengthInBytes(Object value,int FLAG)
-		{
+        public int getLengthInBytes(Object value, int FLAG) {
 			return 16;
 		}
-
 	}
 
 	private static class MInterfacePointerImpl implements SerializerDeserializer {
 
-		public void serializeData(NetworkDataRepresentation ndr,Object value,List defferedPointers,int FLAG)
-		{
+        public void serializeData(NetworkDataRepresentation ndr, Object value, List defferedPointers, int FLAG) {
 			throw new IllegalStateException(JISystem.getLocalizedMessage(JIErrorCodes.JI_UTIL_INCORRECT_CALL));
 		}
 
-		public Object deserializeData(NetworkDataRepresentation ndr,List defferedPointers, Map additionalData, int FLAG)
-		{
+        public Object deserializeData(NetworkDataRepresentation ndr, List defferedPointers, Map additionalData, int FLAG) {
 			throw new IllegalStateException(JISystem.getLocalizedMessage(JIErrorCodes.JI_UTIL_INCORRECT_CALL));
 		}
 
-		public int getLengthInBytes(Object value,int FLAG)
-		{
-			return ((JIInterfacePointer)value).getLength();
+        public int getLengthInBytes(Object value, int FLAG) {
+            return ((JIInterfacePointer) value).getLength();
 		}
 	}
 
 	private static class MInterfacePointerImpl2 implements SerializerDeserializer {
-		public void serializeData(NetworkDataRepresentation ndr,Object value,List defferedPointers,int FLAG)
-		{
-			((JIInterfacePointerBody)value).encode(ndr,FLAG);
+
+        public void serializeData(NetworkDataRepresentation ndr, Object value, List defferedPointers, int FLAG) {
+            ((JIInterfacePointerBody) value).encode(ndr, FLAG);
 		}
-		public Object deserializeData(NetworkDataRepresentation ndr,List defferedPointers, Map additionalData, int FLAG)
-		{
-			return JIInterfacePointerBody.decode(ndr,FLAG);
+
+        public Object deserializeData(NetworkDataRepresentation ndr, List defferedPointers, Map additionalData, int FLAG) {
+            return JIInterfacePointerBody.decode(ndr, FLAG);
 		}
-		public int getLengthInBytes(Object value,int FLAG)
-		{
-			return ((JIInterfacePointerBody)value).getLength();
+
+        public int getLengthInBytes(Object value, int FLAG) {
+            return ((JIInterfacePointerBody) value).getLength();
 		}
 	}
+
+    private static class JIWbemObjectArrayImpl implements SerializerDeserializer {
+
+        public JIWbemObjectArrayImpl() {
+}
+
+        @Override
+        public void serializeData(NetworkDataRepresentation ndr, Object value, List defferedPointers, int FLAG) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public Object deserializeData(NetworkDataRepresentation ndr, List defferedPointers, Map additionalData, int FLAG) {
+            JIWbemObjectArray objectArray = new JIWbemObjectArray();
+            objectArray.decode(ndr, ndr.getBuffer());
+            return objectArray;
+        }
+
+        @Override
+        public int getLengthInBytes(Object value, int FLAG) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+    }
 }

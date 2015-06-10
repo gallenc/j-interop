@@ -14,10 +14,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110, USA
  */
-
 package org.jinterop.dcom.core;
-
-
 
 import java.lang.ref.Reference;
 import java.lang.ref.ReferenceQueue;
@@ -68,7 +65,7 @@ public final class JISession {
 	private JIComServer stub = null;
 	private JIRemUnknownServer stub2 = null;
 	private static int oxidResolverPort = -1;
-	private static byte[] localhost = new byte[]{127,0,0,1};
+    private static byte[] localhost = new byte[]{127, 0, 0, 1};
 	private static String localhostStr = "127.0.0.1";
 	private static String localhostStr2 = "LOCALHOST";
 	private static Map mapOfSessionIdsVsSessions = new HashMap();
@@ -178,14 +175,13 @@ public final class JISession {
 
 		        }
 		    } catch (Exception e) {
-		    	JISystem.getLogger().throwing("JISession","CleanupThread:run()",e);
+                JISystem.getLogger().throwing("JISession", "CleanupThread:run()", e);
 		    }
 		}
-	},"jI_GarbageCollector");
+    }, "jI_GarbageCollector");
 
 	//from JDK bug http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4665037
-	private static String getLocalHost(String destination)
-	{
+    private static String getLocalHost(String destination) {
         DatagramSocket sock;
         InetAddress intendedDestination;
 		try {
@@ -194,21 +190,21 @@ public final class JISession {
 		} catch (Exception e) {
 			return "127.0.0.1";
 		}
-        sock.connect(intendedDestination,sock.getLocalPort());
+        sock.connect(intendedDestination, sock.getLocalPort());
         return sock.getLocalAddress().getHostAddress();
 	}
 
-	static
-	{
+    static {
 		JISystem.internal_initLogger();
 		try {
 			InetAddress localhostAddr = InetAddress.getLocalHost();
 			localhost = localhostAddr.getAddress();
 			localhostStr = localhostAddr.getHostAddress();
 			localhostStr2 = localhostAddr.getCanonicalHostName();
-		} catch (UnknownHostException e) {}
+        } catch (UnknownHostException e) {
+        }
 
-		System.setProperty("jcifs.smb.client.domain","JIDomain");//is being put in for completing type2 message
+        System.setProperty("jcifs.smb.client.domain", "JIDomain");//is being put in for completing type2 message
 		//somehow windows is not taking empty domain name.
 
 		//start the cleanup thread.
@@ -242,7 +238,7 @@ public final class JISession {
 					mapOfObjects.clear();
 					listOfSessions.clear();
 				}
-		},"jI_ShutdownHook"));
+        }, "jI_ShutdownHook"));
 
 
 	}
@@ -328,31 +324,28 @@ public final class JISession {
 
 	}
 
-	static byte[] getLocalhostAddressAsIPbytes()
-	{
+    static byte[] getLocalhostAddressAsIPbytes() {
 		return localhost;
 	}
 
-	static String getLocalhostAddressAsIPString()
-	{
+    static String getLocalhostAddressAsIPString() {
 		return localhostStr;
 	}
 
-	static String getLocalhostCanonicalAddressAsString()
-	{
+    static String getLocalhostCanonicalAddressAsString() {
 		return localhostStr2;
 	}
 
-
-	String getTargetServer()
-	{
+    String getTargetServer() {
 		return targetServer;
 	}
 
-	private JISession() {};
+    private JISession() {
+    }
 
-	static int getOxidResolverPort()
-	{
+    ;
+
+	static int getOxidResolverPort() {
 		return oxidResolverPort;
 	}
 
@@ -360,8 +353,7 @@ public final class JISession {
 	 *
 	 * @return
 	 */
-	public IJIAuthInfo getAuthInfo()
-	{
+    public IJIAuthInfo getAuthInfo() {
 		return authInfo;
 	}
 
@@ -374,10 +366,8 @@ public final class JISession {
 	 * @see JIComServer#JIComServer(JIClsid, JISession)
 	 * @see JIComServer#JIComServer(JIProgId, JISession)
 	 */
-	public static JISession createSession(IJIAuthInfo authInfo)
-	{
-		if (authInfo == null)
-		{
+    public static JISession createSession(IJIAuthInfo authInfo) {
+        if (authInfo == null) {
 			throw new IllegalArgumentException(JISystem.getLocalizedMessage(JIErrorCodes.JI_AUTH_NOT_SUPPLIED));
 		}
 
@@ -385,23 +375,19 @@ public final class JISession {
 
 		session.authInfo = authInfo;
 
-		session.sessionIdentifier = authInfo.getUserName().hashCode() ^ authInfo.getPassword().hashCode() ^ authInfo.getDomain().hashCode() ^ new Object().hashCode() ^ (int)Runtime.getRuntime().freeMemory() ^ randomGen.nextInt();
+        session.sessionIdentifier = authInfo.getUserName().hashCode() ^ authInfo.getPassword().hashCode() ^ authInfo.getDomain().hashCode() ^ new Object().hashCode() ^ (int) Runtime.getRuntime().freeMemory() ^ randomGen.nextInt();
 
 
 		synchronized (mutex) {
-			mapOfSessionIdsVsSessions.put(new Integer(session.sessionIdentifier),session);
+            mapOfSessionIdsVsSessions.put(new Integer(session.sessionIdentifier), session);
 			listOfSessions.add(session);
 		}
 
-		if (JISystem.getLogger().isLoggable(Level.INFO))
-		{
+        if (JISystem.getLogger().isLoggable(Level.INFO)) {
 			JISystem.getLogger().info("Created Session: " + session.sessionIdentifier);
 		}
 		return session;
 	}
-
-
-
 
 	/** Creates a session. This session is not yet attached to a
 	 * COM server.
@@ -414,10 +400,8 @@ public final class JISession {
 	 * @see JIComServer#JIComServer(JIClsid, JISession)
 	 * @see JIComServer#JIComServer(JIProgId, JISession)
 	 */
-	public static JISession createSession(String domain,String username, String password)
-	{
-		if (username == null || password == null || domain == null)
-		{
+    public static JISession createSession(String domain, String username, String password) {
+        if (username == null || password == null || domain == null) {
 			throw new IllegalArgumentException(JISystem.getLocalizedMessage(JIErrorCodes.JI_AUTH_NOT_SUPPLIED));
 		}
 
@@ -425,22 +409,20 @@ public final class JISession {
 		session.username = username;
 		session.password = password;
 		session.domain = domain;
-		session.sessionIdentifier = username.hashCode() ^ password.hashCode() ^ domain.hashCode() ^ new Object().hashCode() ^ (int)Runtime.getRuntime().freeMemory() ^ randomGen.nextInt();
+        session.sessionIdentifier = username.hashCode() ^ password.hashCode() ^ domain.hashCode() ^ new Object().hashCode() ^ (int) Runtime.getRuntime().freeMemory() ^ randomGen.nextInt();
 
 
 		synchronized (mutex) {
-			mapOfSessionIdsVsSessions.put(new Integer(session.sessionIdentifier),session);
+            mapOfSessionIdsVsSessions.put(new Integer(session.sessionIdentifier), session);
 			listOfSessions.add(session);
 		}
 
-		if (JISystem.getLogger().isLoggable(Level.INFO))
-		{
+        if (JISystem.getLogger().isLoggable(Level.INFO)) {
 			JISystem.getLogger().info("Created Session: " + session.sessionIdentifier);
 		}
 		//System.out.println("Created Session: " + session.sessionIdentifier);
 		return session;
 	}
-
 
 	/** Creates a new session using credentials of the <code>session</code>parameter. The new session is not yet attached to a
 	 * COM server.
@@ -450,9 +432,8 @@ public final class JISession {
 	 * @see JIComServer#JIComServer(JIClsid, JISession)
 	 * @see JIComServer#JIComServer(JIProgId, JISession)
 	 */
-	public static JISession createSession(JISession session)
-	{
-		JISession newSession = createSession(session.getDomain(),session.getUserName(),session.getPassword());
+    public static JISession createSession(JISession session) {
+        JISession newSession = createSession(session.getDomain(), session.getUserName(), session.getPassword());
 		newSession.authInfo = session.authInfo;
 		return newSession;
 
@@ -470,24 +451,21 @@ public final class JISession {
 	 * @see JIComServer#JIComServer(JIClsid, JISession)
 	 * @see JIComServer#JIComServer(JIProgId, JISession)
 	 */
-	public static JISession createSession()
-	{
-    	if (!System.getProperty("os.name").toLowerCase().startsWith("windows"))
-    	{
+    public static JISession createSession() {
+        if (!System.getProperty("os.name").toLowerCase().startsWith("windows")) {
     		throw new IllegalArgumentException(JISystem.getLocalizedMessage(JIErrorCodes.JI_WIN_ONLY));
     	}
     	
     	JISession session = new JISession();
-		session.sessionIdentifier =  new Object().hashCode() ^ (int)Runtime.getRuntime().freeMemory() ^ randomGen.nextInt();
+        session.sessionIdentifier = new Object().hashCode() ^ (int) Runtime.getRuntime().freeMemory() ^ randomGen.nextInt();
 		session.isSSO = true;
 
 		synchronized (mutex) {
-			mapOfSessionIdsVsSessions.put(new Integer(session.sessionIdentifier),session);
+            mapOfSessionIdsVsSessions.put(new Integer(session.sessionIdentifier), session);
 			listOfSessions.add(session);
 		}
 
-		if (JISystem.getLogger().isLoggable(Level.INFO))
-		{
+        if (JISystem.getLogger().isLoggable(Level.INFO)) {
 			JISystem.getLogger().info("Created Session for SSO: " + session.sessionIdentifier);
 		}
 
@@ -498,8 +476,7 @@ public final class JISession {
 	 * 
 	 * @return
 	 */
-	public boolean isSSOEnabled()
-	{
+    public boolean isSSOEnabled() {
 		return isSSO;
 	}
 	
@@ -512,19 +489,15 @@ public final class JISession {
 	 * @throws JIException
 	 * @see JIObjectFactory#narrowObject
 	 */
-	public static void destroySession(JISession session) throws JIException
-	{
+    public static void destroySession(JISession session) throws JIException {
 		//null session
-		if (session == null)
-		{
+        if (session == null) {
 			return;
 		}
 
 		//if stub is null then cleanup datastructures holding the session object only
-		if (session.stub == null)
-		{
-			synchronized (mutex)
-			{
+        if (session.stub == null) {
+            synchronized (mutex) {
 				mapOfSessionIdsVsSessions.remove(new Integer(session.getSessionIdentifier()));
 				listOfSessions.remove(session);
 			}
@@ -534,21 +507,18 @@ public final class JISession {
 			return;
 		}
 
-		try{
+        try {
 			//session may have been destroyed and this call is from finalize.
 			ArrayList list = new ArrayList();
 			ArrayList listOfFreeIPIDs = new ArrayList();
-			synchronized (mutex)
-			{
-				if (session.sessionInDestroy)
-				{
+            synchronized (mutex) {
+                if (session.sessionInDestroy) {
 					return;
 				}
 				session.sessionInDestroy = true;
 				//list of dereferenced IPIDs
-				for (int j = 0;j < session.listOfDeferencedIpids.size();j++)
-				{
-					list.add(session.prepareForReleaseRef((String)session.listOfDeferencedIpids.get(j)));
+                for (int j = 0; j < session.listOfDeferencedIpids.size(); j++) {
+                    list.add(session.prepareForReleaseRef((String) session.listOfDeferencedIpids.get(j)));
 				}
 				listOfFreeIPIDs.addAll(session.listOfDeferencedIpids);
 				session.listOfDeferencedIpids.clear();
@@ -558,19 +528,16 @@ public final class JISession {
 				//now take all the objects registered with this session and call release on them.
 //				Iterator iterator = mapOfObjects.keySet().iterator();
 				Iterator iterator = mapOfObjects.entrySet().iterator();
-				while(iterator.hasNext())
-				{
+                while (iterator.hasNext()) {
 					//String ipid = (String)session.mapOfObjects.get(iterator.next());
-					Entry entry = (Entry)iterator.next();
+                    Entry entry = (Entry) iterator.next();
 //					IPID_SessionID_Holder holder = (IPID_SessionID_Holder)mapOfObjects.get(iterator.next());
-					IPID_SessionID_Holder holder = (IPID_SessionID_Holder)entry.getValue();
-					if (session.getSessionIdentifier() != holder.sessionID.intValue())
-					{
+                    IPID_SessionID_Holder holder = (IPID_SessionID_Holder) entry.getValue();
+                    if (session.getSessionIdentifier() != holder.sessionID.intValue()) {
 						continue;
 					}
 	    			String ipid = holder.IPID;
-					if (ipid == null)
-					{
+                    if (ipid == null) {
 						continue;
 					}
 
@@ -599,33 +566,27 @@ public final class JISession {
 
 			listOfFreeIPIDs.clear();
 			//release is performed if only something is in the session.
-			if (list.size() > 0)
-			{
-				JIArray array = new JIArray(list.toArray(new JIStruct[list.size()]),true);
-				try{
+            if (list.size() > 0) {
+                JIArray array = new JIArray(list.toArray(new JIStruct[list.size()]), true);
+                try {
 					session.stub.closeStub(); //close the existing connection
-					session.releaseRefs(array,true);
-				}catch(JIException e)
-				{
+                    session.releaseRefs(array, true);
+                } catch (JIException e) {
 					//This release cycle has to go on.
-					JISystem.getLogger().throwing("JISession","destroySession",e);
+                    JISystem.getLogger().throwing("JISession", "destroySession", e);
 				}
 			}
 
 			JIComOxidRuntime.clearIPIDsforSession(session);
-			if (JISystem.getLogger().isLoggable(Level.INFO))
-			{
+            if (JISystem.getLogger().isLoggable(Level.INFO)) {
 				JISystem.getLogger().info("Destroyed Session: " + session.sessionIdentifier);
 			}
-		}finally
-		{
-			synchronized (mutex)
-			{
+        } finally {
+            synchronized (mutex) {
 				mapOfSessionIdsVsSessions.remove(new Integer(session.getSessionIdentifier()));
 				listOfSessions.remove(session);
 				// and remove its entry from the map
-				if(session.stub.getServerInterfacePointer() != null)
-				{
+                if (session.stub.getServerInterfacePointer() != null) {
 					mapOfOxidsVsJISessions.remove(new JIOxid(session.stub.getServerInterfacePointer().getOXID()));
 				}
 			}
@@ -638,17 +599,14 @@ public final class JISession {
 		session.stub2 = null;
 	}
 
-	private static void postDestroy(JISession session) throws JIException
-	{
+    private static void postDestroy(JISession session) throws JIException {
 		//now destroy all linked sessions
-		if (JISystem.getLogger().isLoggable(Level.INFO))
-		{
+        if (JISystem.getLogger().isLoggable(Level.INFO)) {
 			JISystem.getLogger().info("About to destroy links for Session: " + session.getSessionIdentifier() + " , size of which is " + session.links.size());
 		}
 
-		for (int i = 0; i < session.links.size();i++)
-		{
-			JISession.destroySession((JISession)session.links.get(i));
+        for (int i = 0; i < session.links.size(); i++) {
+            JISession.destroySession((JISession) session.links.get(i));
 		}
 
 		session.links.clear();
@@ -658,28 +616,24 @@ public final class JISession {
 
 	//each session is associated with 1 and only 1 stub.
 	//adding something new now another stub for IRemUnknown operations
-	void setStub(JIComServer stub)
-	{
+    void setStub(JIComServer stub) {
 		this.stub = stub;
 		synchronized (mutex) {
-			mapOfOxidsVsJISessions.put(new JIOxid(stub.getServerInterfacePointer().getOXID()),this);
+            mapOfOxidsVsJISessions.put(new JIOxid(stub.getServerInterfacePointer().getOXID()), this);
 		}
 	}
 
 	//IRemUnknown Stub
-	void setStub2(JIRemUnknownServer stub)
-	{
+    void setStub2(JIRemUnknownServer stub) {
 		this.stub2 = stub;
 		//no need to add this to the Oxid vs Sessions map as we would be using the same interface pointer as the other stub.
 	}
 	
-	JIComServer getStub()
-	{
+    JIComServer getStub() {
 		return this.stub;
 	}
 
-	JIRemUnknownServer getStub2()
-	{
+    JIRemUnknownServer getStub2() {
 		return this.stub2;
 	}
 	
@@ -730,8 +684,7 @@ public final class JISession {
 //		mapOfIPIDSvsCount.put(ipid, new Integer(value.intValue() + num));
 	}
 
-	static void debug_delIpids(String ipid,int num)
-	{
+    static void debug_delIpids(String ipid, int num) {
 //		Integer value = (Integer)mapOfIPIDSvsCount.get(ipid);
 //		mapOfIPIDSvsCount.put(ipid, new Integer(value.intValue() - num));
 	}
@@ -740,23 +693,18 @@ public final class JISession {
 	 * @exclude
 	 * @param IPID
 	 */
-	private void addToSession(String IPID,byte[] oid, boolean dontping)
-	{
+    private void addToSession(String IPID, byte[] oid, boolean dontping) {
 		//Weak reference of the object
 		//mapOfObjects.put(new WeakReference(IPID,referenceQueueOfCOMObjects),IPID);
 		//it does not matter if we create a new OID here, the OxidCOMRunttime API uses the OID in the MAP , and not this one.
-		JIObjectId joid = new JIObjectId(oid,dontping);
-		JIComOxidRuntime.addUpdateOXIDs(this,IPID,joid);
-		if (JISystem.getLogger().isLoggable(Level.INFO))
-		{
+        JIObjectId joid = new JIObjectId(oid, dontping);
+        JIComOxidRuntime.addUpdateOXIDs(this, IPID, joid);
+        if (JISystem.getLogger().isLoggable(Level.INFO)) {
 			JISystem.getLogger().info("[addToSession] Adding IPID: " + IPID + " to session: " + getSessionIdentifier());
 		}
 	}
 
 //	private static Map mapOfIPIDSvsCount = new HashMap();
-
-
-
 //	public static void debug_dumpIpidVsCountMap()
 //	{
 //		if (JISystem.getLogger().isLoggable(Level.WARNING))
@@ -764,7 +712,6 @@ public final class JISession {
 //			JISystem.getLogger().warning("Dumping mapOfIPIDSvsCount " + mapOfIPIDSvsCount.toString());
 //		}
 //	}
-
 	//this gets called from the cleanupthread and no place else and it calls the releaseRef of session which
 	//internally calls the add_releaseRef of the JIComServer, that method is synched at the instance level.
 	//I was worried about a deadlock with destroySession , since that also ultimately calls the add_releaseRef, but
@@ -868,13 +815,11 @@ public final class JISession {
 	 *
 	 * @return
 	 */
-	public String getUserName()
-	{
+    public String getUserName() {
 		return authInfo == null ? username : authInfo.getUserName();
 	}
 
-	String getPassword()
-	{
+    String getPassword() {
 		return authInfo == null ? password : authInfo.getPassword();
 	}
 
@@ -882,19 +827,15 @@ public final class JISession {
 	 *
 	 * @return
 	 */
-	public String getDomain()
-	{
+    public String getDomain() {
 		return authInfo == null ? domain : authInfo.getDomain();
 	}
-
-
 
 	/**Returns a unique identifier for this session.
 	 *
 	 * @return
 	 */
-	public int getSessionIdentifier()
-	{
+    public int getSessionIdentifier() {
 		return sessionIdentifier;
 	}
 
@@ -903,37 +844,33 @@ public final class JISession {
 	 */
 	public boolean equals(Object obj) {
 
-		if (obj == null || !(obj instanceof JISession))
-		{
+        if (obj == null || !(obj instanceof JISession)) {
 			return false;
 		}
 
-		JISession temp  = (JISession)obj;
-		return temp.sessionIdentifier == sessionIdentifier ;
+        JISession temp = (JISession) obj;
+        return temp.sessionIdentifier == sessionIdentifier;
 	}
 
 	/**
 	 * @exclude
 	 */
-	public int hashCode()
-	{
+    public int hashCode() {
 		return sessionIdentifier;
 	}
 
-	protected void finalize()
-	{
+    protected void finalize() {
 		try {
 			destroySession(this);
 		} catch (JIException e) {
-			if (JISystem.getLogger().isLoggable(Level.FINEST))
-			{
+            if (JISystem.getLogger().isLoggable(Level.FINEST)) {
 				JISystem.getLogger().finest("Exception in finalize when destroying session " + e.getMessage());
 			}
 		}
 	}
 
 	synchronized IJIUnreferenced getUnreferencedHandler(String ipid) {
-			return (IJIUnreferenced)mapOfUnreferencedHandlers.get(ipid);
+        return (IJIUnreferenced) mapOfUnreferencedHandlers.get(ipid);
 	}
 
 	synchronized void registerUnreferencedHandler(String ipid, IJIUnreferenced unreferenced) {
@@ -951,8 +888,7 @@ public final class JISession {
 	 * @see IJIComObject#setInstanceLevelSocketTimeout(int)
 	 * @see IJIComObject#call(JICallBuilder, int)
 	 */
-	public void setGlobalSocketTimeout(int timeout)
-	{
+    public void setGlobalSocketTimeout(int timeout) {
 		this.timeout = timeout;
 	}
 
@@ -960,8 +896,7 @@ public final class JISession {
 	 *
 	 * @return
 	 */
-	public int getGlobalSocketTimeout()
-	{
+    public int getGlobalSocketTimeout() {
 		return this.timeout;
 	}
 
@@ -982,8 +917,7 @@ public final class JISession {
 	 *
 	 * @param enable <code>true</code> to enable, <code>false</code> to disable.
 	 */
-	public void useSessionSecurity(boolean enable)
-	{
+    public void useSessionSecurity(boolean enable) {
 		useSessionSecurity = enable;
 //		if (enable)
 //		{
@@ -998,8 +932,7 @@ public final class JISession {
 	 * 
 	 * @param enable <code>true</code> to enable.
 	 */
-	public void useNTLMv2(boolean enable)
-	{
+    public void useNTLMv2(boolean enable) {
 		useNTLMv2 = enable;
 	}
 	
@@ -1007,8 +940,7 @@ public final class JISession {
 	 *
 	 * @return <code>true</code> for enabled.
 	 */
-	public boolean isSessionSecurityEnabled()
-	{
+    public boolean isSessionSecurityEnabled() {
 		return !isSSO & useSessionSecurity;
 	}
 
@@ -1016,8 +948,7 @@ public final class JISession {
     *
     * @return <code>true</code> for enabled.
     */
-   public boolean isNTLMv2Enabled()
-	{
+    public boolean isNTLMv2Enabled() {
 		return !isSSO & useNTLMv2;
 	}
 
@@ -1026,17 +957,17 @@ public final class JISession {
 	 *
 	 * @param session
 	 */
-	static void linkTwoSessions(JISession src, JISession target)
-	{
-		if (src.sessionInDestroy || target.sessionInDestroy)
+    static void linkTwoSessions(JISession src, JISession target) {
+        if (src.sessionInDestroy || target.sessionInDestroy) {
 			return;
+        }
 
-		if (src.equals(target))
+        if (src.equals(target)) {
 			return;
+        }
 
 		synchronized (mutex) {
-			if (!src.links.contains(target))
-			{
+            if (!src.links.contains(target)) {
 				src.links.add(target);
 			}
 		}
@@ -1045,20 +976,19 @@ public final class JISession {
 	/** Removes session from src sessions list.
 	 *
 	 */
-	static void unLinkSession(JISession src, JISession tobeunlinked)
-	{
-		if (src.sessionInDestroy)
+    static void unLinkSession(JISession src, JISession tobeunlinked) {
+        if (src.sessionInDestroy) {
 			return;
+        }
 
-		if (src.equals(tobeunlinked))
+        if (src.equals(tobeunlinked)) {
 			return;
+        }
 
 		synchronized (mutex) {
 			src.links.remove(tobeunlinked);
 		}
 	}
-
-
 
 	/** Based on the oxid returns the JISession (and thus the COM Server) associated with it. This is required, since there are
 	 * cases where a different JISession may be passed in JIObjectFactory for an JIInterfacePointer which does not belong to this JISession.
@@ -1067,17 +997,13 @@ public final class JISession {
 	 *
 	 * @exclude
 	 */
-	static JISession resolveSessionForOxid(JIOxid oxid)
-	{
+    static JISession resolveSessionForOxid(JIOxid oxid) {
 		synchronized (mutex) {
-			return (JISession)mapOfOxidsVsJISessions.get(oxid);
+            return (JISession) mapOfOxidsVsJISessions.get(oxid);
 		}
 	}
 
-	boolean isSessionInDestroy()
-	{
+    boolean isSessionInDestroy() {
 		return sessionInDestroy;
 	}
-
-
 }

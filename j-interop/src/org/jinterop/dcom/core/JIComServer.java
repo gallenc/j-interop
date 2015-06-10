@@ -14,7 +14,6 @@
  * License along with this library; if not, write to the Free Software
  * Foundation Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110, USA
  */
-
 package org.jinterop.dcom.core;
 
 import java.io.IOException;
@@ -40,7 +39,6 @@ import rpc.Endpoint;
 import rpc.FaultException;
 import rpc.Stub;
 
-
 /** Startup class representing a COM Server.
  *  <p>
  *	Sample Usage :-
@@ -62,14 +60,15 @@ import rpc.Stub;
 public final class JIComServer extends Stub {
 
 	private static Properties defaults = new Properties();
+
 	static {
 
-		defaults.put("rpc.ntlm.lanManagerKey","false");
-		defaults.put("rpc.ntlm.sign","false");
-		defaults.put("rpc.ntlm.seal","false");
-		defaults.put("rpc.ntlm.keyExchange","false");
-		defaults.put("rpc.ntlm.sso","false");
-		defaults.put("rpc.connectionContext","rpc.security.ntlm.NtlmConnectionContext");
+        defaults.put("rpc.ntlm.lanManagerKey", "false");
+        defaults.put("rpc.ntlm.sign", "false");
+        defaults.put("rpc.ntlm.seal", "false");
+        defaults.put("rpc.ntlm.keyExchange", "false");
+        defaults.put("rpc.ntlm.sso", "false");
+        defaults.put("rpc.connectionContext", "rpc.security.ntlm.NtlmConnectionContext");
 		defaults.put("rpc.socketTimeout", new Integer(0).toString());
 //		rpc.connectionContext = rpc.security.ntlm.NtlmConnectionContext
 //		rpc.ntlm.sign = false
@@ -77,7 +76,6 @@ public final class JIComServer extends Stub {
 //		rpc.ntlm.keyExchange = false
 
 	}
-
 	//private String address = null;
 	private JIRemActivation remoteActivation = null;
 	private JIOxidResolver oxidResolver = null;
@@ -137,12 +135,10 @@ public final class JIComServer extends Stub {
 		super.getProperties().setProperty("rpc.security.password", session.getPassword());
 		super.getProperties().setProperty("rpc.ntlm.domain", session.getDomain());
 		super.getProperties().setProperty("rpc.socketTimeout", new Integer(session.getGlobalSocketTimeout()).toString());
-		if (session.isNTLMv2Enabled())
-		{
+        if (session.isNTLMv2Enabled()) {
 			super.getProperties().setProperty("rpc.ntlm.ntlmv2", "true");
 		}
-		if (session.isSSOEnabled())
-		{
+        if (session.isSSOEnabled()) {
 			super.getProperties().setProperty("rpc.ntlm.sso", "true");
 		}
 		
@@ -157,8 +153,7 @@ public final class JIComServer extends Stub {
 //		if (!targetAddress.equals(""))
 		{
 			//now we choose, otherwise the first one we get.
-			while(i < addressBindings.length)
-			{
+            while (i < addressBindings.length) {
 				binding = addressBindings[i];
 				if (binding.getTowerId() != 0x07) //this means, even though I asked for TCPIP something else was supplied, noticed this in win2k.
 				{
@@ -211,48 +206,41 @@ public final class JIComServer extends Stub {
 		//will use this last binding .
 		//and currently only TCPIP is supported.
 		String address = binding.getNetworkAddress();
-		if (address.indexOf("[") == -1 )//this does not contain the port
+        if (address.indexOf("[") == -1)//this does not contain the port
 		{
 			String ipAddr = JISystem.getIPForHostName(address); //to use the binding supplied by the user.
-			if (ipAddr != null)
-			{
+            if (ipAddr != null) {
 				address = ipAddr;
 			}
 			//use 135
 			address = address + "[135]";
-		}
-		else
-		{
+        } else {
 			int index = address.indexOf("[");
-			String hostname = binding.getNetworkAddress().substring(0,index);
+            String hostname = binding.getNetworkAddress().substring(0, index);
 			String ipAddr = JISystem.getIPForHostName(hostname); //to use the binding supplied by the user.
-			if (ipAddr != null)
-			{
+            if (ipAddr != null) {
 				address = ipAddr + address.substring(index);
 			}
 		}
 		super.setAddress("ncacn_ip_tcp:" + address);
 		this.session = session;
-		this.session.setTargetServer(getAddress().substring(getAddress().indexOf(":") + 1,getAddress().indexOf("[")));
-		oxidResolver = new JIOxidResolver(((JIStdObjRef)interfacePointer.getObjectReference(JIInterfacePointer.OBJREF_STANDARD)).getOxid());
+        this.session.setTargetServer(getAddress().substring(getAddress().indexOf(":") + 1, getAddress().indexOf("[")));
+        oxidResolver = new JIOxidResolver(((JIStdObjRef) interfacePointer.getObjectReference(JIInterfacePointer.OBJREF_STANDARD)).getOxid());
 		try {
 
 			syntax = "99fcfec4-5260-101b-bbcb-00aa0021347a:0.0";
 			attach();
 			//first send an AlterContext to the IID of the IOxidResolver
 			getEndpoint().getSyntax().setUuid(new rpc.core.UUID("99fcfec4-5260-101b-bbcb-00aa0021347a"));
-			getEndpoint().getSyntax().setVersion(0,0);
-			((JIComEndpoint)getEndpoint()).rebindEndPoint();
+            getEndpoint().getSyntax().setVersion(0, 0);
+            ((JIComEndpoint) getEndpoint()).rebindEndPoint();
 
-			call(Endpoint.IDEMPOTENT,oxidResolver);
-		}catch(FaultException e)
-		{
-			throw new JIException(e.status,e);
-		}
-		catch (IOException e) {
-			throw new JIException(JIErrorCodes.RPC_E_UNEXPECTED,e);
-		}catch (JIRuntimeException e1)
-		{
+            call(Endpoint.IDEMPOTENT, oxidResolver);
+        } catch (FaultException e) {
+            throw new JIException(e.status, e);
+        } catch (IOException e) {
+            throw new JIException(JIErrorCodes.RPC_E_UNEXPECTED, e);
+        } catch (JIRuntimeException e1) {
 			throw new JIException(e1);
 		}
 
@@ -270,8 +258,7 @@ public final class JIComServer extends Stub {
 //		if (!targetAddress.equals(""))
 		{
 			//now we choose, otherwise the first one we get.
-			while(i < bindings.length)
-			{
+            while (i < bindings.length) {
 				binding = bindings[i];
 				if (binding.getTowerId() != 0x07) //this means, even though I asked for TCPIP something else was supplied, noticed this in win2k.
                 {
@@ -320,8 +307,7 @@ public final class JIComServer extends Stub {
 
 
 		//now set the NTLMv2 Session Security.
-		if (session.isSessionSecurityEnabled())
-		{
+        if (session.isSessionSecurityEnabled()) {
 			super.getProperties().setProperty("rpc.ntlm.seal", "true");
 			super.getProperties().setProperty("rpc.ntlm.sign", "true");
 			super.getProperties().setProperty("rpc.ntlm.keyExchange", "true");
@@ -333,10 +319,9 @@ public final class JIComServer extends Stub {
 		
 		address = binding.getNetworkAddress(); //this will always have the port.
 		int index = address.indexOf("[");
-		String hostname = binding.getNetworkAddress().substring(0,index);
+        String hostname = binding.getNetworkAddress().substring(0, index);
 		String ipAddr = JISystem.getIPForHostName(hostname); //to use the binding supplied by the user.
-		if (ipAddr != null)
-		{
+        if (ipAddr != null) {
 			address = ipAddr + address.substring(index);
 		}
 
@@ -349,7 +334,6 @@ public final class JIComServer extends Stub {
 
 	}
 
-
 	/**<p><code>JIProgId</code> based constructor with the host machine for COM server being <i>LOCALHOST</i>.
 	 *
 	 * @param progId user-friendly string such as "Excel.Application" , "TestCOMServer.Test123" etc.
@@ -358,9 +342,8 @@ public final class JIComServer extends Stub {
 	 * @throws IllegalArgumentException raised when either <code>progId</code> or <code>session</code> is <code>null</code>.
 	 * @throws UnknownHostException
 	 */
-	public JIComServer(JIProgId progId,JISession session) throws JIException, UnknownHostException
-	{
-		this(progId,InetAddress.getLocalHost().getHostAddress(),session);
+    public JIComServer(JIProgId progId, JISession session) throws JIException, UnknownHostException {
+        this(progId, InetAddress.getLocalHost().getHostAddress(), session);
 	}
 
 	/** <p><code>{@link JIClsid}</code> based constructor with the host machine for COM server being <i>LOCALHOST</i>.
@@ -371,9 +354,8 @@ public final class JIComServer extends Stub {
 	 * @throws IllegalArgumentException raised when either <code>clsid</code> or <code>session</code> is <code>null</code>.
 	 * @throws UnknownHostException
 	 */
-	public JIComServer(JIClsid clsid,JISession session) throws IllegalArgumentException,JIException, UnknownHostException
-	{
-		this(clsid,InetAddress.getLocalHost().getHostAddress(),session);
+    public JIComServer(JIClsid clsid, JISession session) throws IllegalArgumentException, JIException, UnknownHostException {
+        this(clsid, InetAddress.getLocalHost().getHostAddress(), session);
 	}
 
 	/**<p>Refer {@link #JIComServer(JIProgId, JISession)} for details.
@@ -385,22 +367,18 @@ public final class JIComServer extends Stub {
 	 * @throws IllegalArgumentException raised when any of the parameters is <code>null</code>.
 	 * @throws UnknownHostException
 	 */
-	public JIComServer(JIProgId progId,String address, JISession session) throws JIException, UnknownHostException
-	{
+    public JIComServer(JIProgId progId, String address, JISession session) throws JIException, UnknownHostException {
 		super();
 
-		if (progId == null || address == null || session == null)
-		{
+        if (progId == null || address == null || session == null) {
 			throw new IllegalArgumentException(JISystem.getLocalizedMessage(JIErrorCodes.JI_COMSTUB_ILLEGAL_ARGUMENTS));
 		}
 
-		if (session.getStub() != null)
-		{
+        if (session.getStub() != null) {
 			throw new JIException(JIErrorCodes.JI_SESSION_ALREADY_ESTABLISHED);
 		}
 
-		if (session.isSSOEnabled())
-		{
+        if (session.isSSOEnabled()) {
 			throw new IllegalArgumentException(JISystem.getLocalizedMessage(JIErrorCodes.JI_COMSTUB_ILLEGAL_ARGUMENTS2));
 		}
 		
@@ -409,10 +387,28 @@ public final class JIComServer extends Stub {
 
 		progId.setSession(session);
 		progId.setServer(address);
-		address = "ncacn_ip_tcp:"+address+"[135]";
+        address = "ncacn_ip_tcp:" + address + "[135]";
 		JIClsid clsid = progId.getCorrespondingCLSID();
-		initialise(clsid,address,session);
+        initialise(clsid, address, session);
 	}
+
+    public JIComServer(JIClsid clsid, String address, JISession session, Properties defaults) throws JIException, UnknownHostException {
+        super();
+
+        if (clsid == null || address == null || session == null) {
+            throw new IllegalArgumentException(JISystem.getLocalizedMessage(JIErrorCodes.JI_COMSTUB_ILLEGAL_ARGUMENTS));
+        }
+
+        if (session.getStub() != null) {
+            throw new JIException(JIErrorCodes.JI_SESSION_ALREADY_ESTABLISHED);
+        }
+
+        address = address.trim();
+        //address = address.replace(' ','');
+        address = "ncacn_ip_tcp:" + InetAddress.getByName(address).getHostAddress() + "[135]";
+
+        initialise(clsid, address, session);
+    }
 
 	/** <p>Refer {@link #JIComServer(JIClsid, JISession)} for details.
 	 *
@@ -424,67 +420,55 @@ public final class JIComServer extends Stub {
 	 * @throws IllegalArgumentException raised when any of the parameters is <code>null</code>.
 	 * @throws UnknownHostException
 	 */
-	public JIComServer(JIClsid clsid,String address, JISession session) throws JIException, UnknownHostException
-	{
+    public JIComServer(JIClsid clsid, String address, JISession session) throws JIException, UnknownHostException {
 		super();
 
-		if (clsid == null || address == null || session == null)
-		{
+        if (clsid == null || address == null || session == null) {
 			throw new IllegalArgumentException(JISystem.getLocalizedMessage(JIErrorCodes.JI_COMSTUB_ILLEGAL_ARGUMENTS));
 		}
 
-		if (session.getStub() != null)
-		{
+        if (session.getStub() != null) {
 			throw new JIException(JIErrorCodes.JI_SESSION_ALREADY_ESTABLISHED);
 		}
 
 		address = address.trim();
 		//address = address.replace(' ','');
-		address = "ncacn_ip_tcp:"+InetAddress.getByName(address).getHostAddress()+"[135]";
+        address = "ncacn_ip_tcp:" + InetAddress.getByName(address).getHostAddress() + "[135]";
 
-		initialise(clsid,address,session);
+        initialise(clsid, address, session);
 	}
 
-	private void initialise(JIClsid clsid,String address, JISession session) throws JIException
-	{
+    private void initialise(JIClsid clsid, String address, JISession session) throws JIException {
 		super.setTransportFactory(JIComTransportFactory.getSingleTon());
 		//now read the session and prepare information for the stub.
 		super.setProperties(new Properties(defaults));
 		super.getProperties().setProperty("rpc.socketTimeout", new Integer(session.getGlobalSocketTimeout()).toString());
 		super.setAddress(address);
 		
-		if (session.isNTLMv2Enabled())
-		{
+        if (session.isNTLMv2Enabled()) {
 			super.getProperties().setProperty("rpc.ntlm.ntlmv2", "true");
 		}
 		
-		if (session.isSSOEnabled())
-		{
+        if (session.isSSOEnabled()) {
 			super.getProperties().setProperty("rpc.ntlm.sso", "true");
-		}
-		else
-		{
+        } else {
 			super.getProperties().setProperty("rpc.security.username", session.getUserName());
 			super.getProperties().setProperty("rpc.security.password", session.getPassword());
 			super.getProperties().setProperty("rpc.ntlm.domain", session.getDomain());
 		}
 
-		if (JISystem.getLogger().isLoggable(Level.INFO))
-		{
+        if (JISystem.getLogger().isLoggable(Level.INFO)) {
 			JISystem.internal_dumpMap();
 		}
 
 		this.clsid = clsid.getCLSID().toUpperCase();
 		this.session = session;
-		this.session.setTargetServer(address.substring(address.indexOf(":") + 1,address.indexOf("[")));
-		try{
+        this.session.setTargetServer(address.substring(address.indexOf(":") + 1, address.indexOf("[")));
+        try {
 			init();
-		}catch(JIException e)
-		{
-			if (e.getErrorCode() == 0x80040154)
-			{
-				if (JISystem.getLogger().isLoggable(Level.WARNING))
-				{
+        } catch (JIException e) {
+            if (e.getErrorCode() == 0x80040154) {
+                if (JISystem.getLogger().isLoggable(Level.WARNING)) {
 					JISystem.getLogger().warning("Got the class not registered exception , will attempt setting entries based on status flags...");
 				}
 				//try registering the dll\ocx on our own
@@ -517,19 +501,15 @@ public final class JIComServer extends Stub {
 						registry.closeConnection();
 					} catch (UnknownHostException e1) {
 						//auto registration failed as well...
-						JISystem.getLogger().throwing("JIComServer","initialise",e1);
-						throw new JIException(JIErrorCodes.JI_WINREG_EXCEPTION3,e1);
+                        JISystem.getLogger().throwing("JIComServer", "initialise", e1);
+                        throw new JIException(JIErrorCodes.JI_WINREG_EXCEPTION3, e1);
 					}
 					//lets retry
 					init();
-				}
-				else
-				{
+                } else {
 					throw e;
 				}
-			}
-			else
-			{
+            } else {
 				throw e;
 			}
 
@@ -539,11 +519,8 @@ public final class JIComServer extends Stub {
 		this.session.setStub2(new JIRemUnknownServer(session, remunknownIPID, getAddress()));
 	}
 
-
-	private void init () throws JIException
-	{
-		if (remoteActivation != null && remoteActivation.isActivationSuccessful())
-		{
+    private void init() throws JIException {
+        if (remoteActivation != null && remoteActivation.isActivationSuccessful()) {
 			return;
 		}
 
@@ -604,9 +581,8 @@ public final class JIComServer extends Stub {
 		JIStringBinding binding = null;
 		JIStringBinding nameBinding = null;
 		String targetAddress = getAddress();
-		targetAddress  = targetAddress.substring(targetAddress.indexOf(':') + 1,targetAddress.indexOf('['));
-		while(i < bindings.length)
-		{
+        targetAddress = targetAddress.substring(targetAddress.indexOf(':') + 1, targetAddress.indexOf('['));
+        while (i < bindings.length) {
 			binding = bindings[i];
 			if (binding.getTowerId() != 0x07) //this means, even though I asked for TCPIP something else was supplied, noticed this in win2k.
             {
@@ -615,59 +591,47 @@ public final class JIComServer extends Stub {
             }
 			//get the one with IP address
 			int index = binding.getNetworkAddress().indexOf(".");
-			if (index != -1)
-			{
-				try{
+            if (index != -1) {
+                try {
 					//Integer.parseInt(binding.getNetworkAddress().substring(0,index));
 					index = binding.getNetworkAddress().indexOf("[");//this contains the port
-					if (index != -1 && binding.getNetworkAddress().substring(0,index).equalsIgnoreCase(targetAddress))
-					{
+                    if (index != -1 && binding.getNetworkAddress().substring(0, index).equalsIgnoreCase(targetAddress)) {
 						break;
 					}
-				}catch(NumberFormatException e)
-				{
-
+                } catch (NumberFormatException e) {
 				}
-			}
-			else
-			{
+            } else {
 				//can only come for the name, saving it incase nothing matches the target address
 				//then we are not sure which is the right IP and which might be virtual, refer to
 				//issue faced by Igor.
 				nameBinding = binding;
 				index = binding.getNetworkAddress().indexOf("[");//this contains the port
-				if (binding.getNetworkAddress().substring(0,index).equalsIgnoreCase(targetAddress))
-				{
+                if (binding.getNetworkAddress().substring(0, index).equalsIgnoreCase(targetAddress)) {
 					break;
 				}
 			}
 			i++;
 		}
 
-		if (binding == null)
-		{
+        if (binding == null) {
 			binding = nameBinding;
 		}
 		//will use this last binding .
 		//and currently only TCPIP is supported.
 		//now set the NTLMv2 Session Security.
-		if (session.isSessionSecurityEnabled())
-		{
-			super.getProperties().setProperty("rpc.ntlm.seal", "true");
+        if (session.isSessionSecurityEnabled()) {
+            super.getProperties().setProperty("rpc.ntlm.seal", "false");
 			super.getProperties().setProperty("rpc.ntlm.sign", "true");
 			super.getProperties().setProperty("rpc.ntlm.keyExchange", "true");
 			super.getProperties().setProperty("rpc.ntlm.keyLength", "128");
 			super.getProperties().setProperty("rpc.ntlm.ntlm2", "true");
 		}
 
-		
-
 		String address = binding.getNetworkAddress(); //this will always have the port.
 		int index = address.indexOf("[");
-		String hostname = binding.getNetworkAddress().substring(0,index);
+        String hostname = binding.getNetworkAddress().substring(0, index);
 		String ipAddr = JISystem.getIPForHostName(hostname); //to use the binding supplied by the user.
-		if (ipAddr != null)
-		{
+        if (ipAddr != null) {
 			address = ipAddr + address.substring(index);
 		}
 
@@ -676,11 +640,8 @@ public final class JIComServer extends Stub {
 		remunknownIPID = remoteActivation.getIPID();
  	}
 
-
-
 	//Will give a call to IRemUnknown for the passed IID.
-	IJIComObject getInterface(String iid,String ipidOfTheTargetUnknown) throws JIException
-	{
+    IJIComObject getInterface(String iid, String ipidOfTheTargetUnknown) throws JIException {
 		IJIComObject retval = null;
 		//this is still essentially serial, since all threads will have to wait for mutex before
 		//entering addToSession.
@@ -690,17 +651,14 @@ public final class JIComServer extends Stub {
 			//setObject(ipid);
 
 			//JIRemUnknown reqUnknown = new JIRemUnknown(unknownIPID,iid,5);
-			JIRemUnknown reqUnknown = new JIRemUnknown(ipidOfTheTargetUnknown,iid);
+            JIRemUnknown reqUnknown = new JIRemUnknown(ipidOfTheTargetUnknown, iid);
 			try {
-				this.session.getStub2().call(Endpoint.IDEMPOTENT,reqUnknown);
-			}catch(FaultException e)
-			{
-				throw new JIException(e.status,e);
-			}
-			catch (IOException e) {
-				throw new JIException(JIErrorCodes.RPC_E_UNEXPECTED,e);
-			}catch (JIRuntimeException e1)
-			{
+                this.session.getStub2().call(Endpoint.IDEMPOTENT, reqUnknown);
+            } catch (FaultException e) {
+                throw new JIException(e.status, e);
+            } catch (IOException e) {
+                throw new JIException(JIErrorCodes.RPC_E_UNEXPECTED, e);
+            } catch (JIRuntimeException e1) {
 				//remoteActivation = null;
 				throw new JIException(e1);
 			}
@@ -709,31 +667,27 @@ public final class JIComServer extends Stub {
 			//increasing the reference count.
 			retval.addRef();
 			//for querying dispatch we can't send another call
-			if (!iid.equalsIgnoreCase("00020400-0000-0000-c000-000000000046"))
-			{
+            if (!iid.equalsIgnoreCase("00020400-0000-0000-c000-000000000046")) {
 				boolean success = true;
-				((JIComObjectImpl)retval).setIsDual(true);
+                ((JIComObjectImpl) retval).setIsDual(true);
 				//now to check whether it supports IDispatch
 				//IDispatch 00020400-0000-0000-c000-000000000046
-				JIRemUnknown dispatch = new JIRemUnknown(retval.getIpid(),"00020400-0000-0000-c000-000000000046");
+                JIRemUnknown dispatch = new JIRemUnknown(retval.getIpid(), "00020400-0000-0000-c000-000000000046");
 				try {
-					this.session.getStub2().call(Endpoint.IDEMPOTENT,dispatch);
-				}catch(FaultException e)
-				{
-					throw new JIException(e.status,e);
-				}catch (IOException e) {
-					throw new JIException(JIErrorCodes.RPC_E_UNEXPECTED,e);
-				}catch (JIRuntimeException e1)
-				{
+                    this.session.getStub2().call(Endpoint.IDEMPOTENT, dispatch);
+                } catch (FaultException e) {
+                    throw new JIException(e.status, e);
+                } catch (IOException e) {
+                    throw new JIException(JIErrorCodes.RPC_E_UNEXPECTED, e);
+                } catch (JIRuntimeException e1) {
 					//will eat this exception here.
-					((JIComObjectImpl)retval).setIsDual(false);
+                    ((JIComObjectImpl) retval).setIsDual(false);
 					success = false;
 				}
 
-				if (success)
-				{
+                if (success) {
 					//which means that IDispatch is supported
-					session.releaseRef(dispatch.getInterfacePointer().getIPID(),((JIStdObjRef)dispatch.getInterfacePointer().getObjectReference(JIInterfacePointer.OBJREF_STANDARD)).getPublicRefs());
+                    session.releaseRef(dispatch.getInterfacePointer().getIPID(), ((JIStdObjRef) dispatch.getInterfacePointer().getObjectReference(JIInterfacePointer.OBJREF_STANDARD)).getPublicRefs());
 				}
 			}
 		}
@@ -742,19 +696,13 @@ public final class JIComServer extends Stub {
 
 	}
 
-
-
-
-
 	/**Returns an <code>IJIComObject</code> representing the COM Server.
 	 *
 	 * @return
 	 * @throws JIException
 	 */
-	public IJIComObject createInstance() throws JIException
-	{
-		if (interfacePtrCtor != null)
-		{
+    public IJIComObject createInstance() throws JIException {
+        if (interfacePtrCtor != null) {
 			throw new IllegalStateException(JISystem.getLocalizedMessage(JIErrorCodes.JI_COMSTUB_WRONGCALLCREATEINSTANCE));
 		}
 		IJIComObject comObject = null;
@@ -762,25 +710,21 @@ public final class JIComServer extends Stub {
 		//This method is still essentially serial, since all threads will have to stop at mutex and then
 		//go to addToSession after it (since there is no condition).
 		synchronized (mutex) {
-			if (serverInstantiated)
-			{
-				throw new JIException(JIErrorCodes.JI_OBJECT_ALREADY_INSTANTIATED,(Throwable)null);
+            if (serverInstantiated) {
+                throw new JIException(JIErrorCodes.JI_OBJECT_ALREADY_INSTANTIATED, (Throwable) null);
 			}
 //			JIStdObjRef objRef = (JIStdObjRef)(remoteActivation.getMInterfacePointer().getObjectReference(JIInterfacePointer.OBJREF_STANDARD));
 //			comObject = getObject(objRef.getIpid(),IJIUnknown.IID);
 			comObject = JIFrameworkHelper.instantiateComObject(session, remoteActivation.getMInterfacePointer());
-			if (remoteActivation.isDual)
-			{
+            if (remoteActivation.isDual) {
 				//IJIComObject comObject2 = getObject(remoteActivation.dispIpid,"00020400-0000-0000-c000-000000000046");
 				//this will get garbage collected and then removed.
 				//session.addToSession(comObject2,remoteActivation.dispOid);
-				session.releaseRef(remoteActivation.dispIpid,remoteActivation.dispRefs);
+                session.releaseRef(remoteActivation.dispIpid, remoteActivation.dispRefs);
 				remoteActivation.dispIpid = null;
-				((JIComObjectImpl)comObject).setIsDual(true);
-			}
-			else
-			{
-				((JIComObjectImpl)comObject).setIsDual(false);
+                ((JIComObjectImpl) comObject).setIsDual(true);
+            } else {
+                ((JIComObjectImpl) comObject).setIsDual(false);
 			}
 			//increasing the reference count.
 			comObject.addRef();
@@ -796,10 +740,8 @@ public final class JIComServer extends Stub {
 	 * @return
 	 * @throws JIException
 	 */
-	IJIComObject getInstance() throws JIException
-	{
-		if (interfacePtrCtor == null)
-		{
+    IJIComObject getInstance() throws JIException {
+        if (interfacePtrCtor == null) {
 			throw new IllegalStateException(JISystem.getLocalizedMessage(JIErrorCodes.JI_COMSTUB_WRONGCALLGETINSTANCE));
 		}
 
@@ -807,14 +749,13 @@ public final class JIComServer extends Stub {
 		//This method is still essentially serial, since all threads will have to stop at mutex and then
 		//go to addToSession after it (since there is no condition).
 		synchronized (mutex) {
-			if (serverInstantiated)
-			{
-				throw new JIException(JIErrorCodes.JI_OBJECT_ALREADY_INSTANTIATED,(Throwable)null);
+            if (serverInstantiated) {
+                throw new JIException(JIErrorCodes.JI_OBJECT_ALREADY_INSTANTIATED, (Throwable) null);
 			}
 
 //			JIStdObjRef objRef = (JIStdObjRef)(interfacePtrCtor.getObjectReference(JIInterfacePointer.OBJREF_STANDARD));
 //			comObject = getObject(objRef.getIpid(),interfacePtrCtor.getIID());
-			comObject = JIFrameworkHelper.instantiateComObject(session,interfacePtrCtor);
+            comObject = JIFrameworkHelper.instantiateComObject(session, interfacePtrCtor);
 			//increasing the reference count.
 			comObject.addRef();
 			serverInstantiated = true;
@@ -822,7 +763,6 @@ public final class JIComServer extends Stub {
 
 		return comObject;
 	}
-
 
 	protected String getSyntax() {
 		return syntax;
@@ -841,7 +781,6 @@ public final class JIComServer extends Stub {
 //		else
 //			return null;
 //	}
-
 	/** Execute a Method on the COM Interface identified by the IID.
 	 *
 	 *
@@ -851,8 +790,7 @@ public final class JIComServer extends Stub {
 	 * @return
 	 * @throws JIException
 	 */
-	Object[] call(JICallBuilder obj,String targetIID) throws JIException
-	{
+    Object[] call(JICallBuilder obj, String targetIID) throws JIException {
 		return call(obj, targetIID, session.getGlobalSocketTimeout());
 	}
 
@@ -865,23 +803,18 @@ public final class JIComServer extends Stub {
 	 * @return
 	 * @throws JIException
 	 */
-	Object[] call(JICallBuilder obj,String targetIID, int socketTimeout) throws JIException
-	{
+    Object[] call(JICallBuilder obj, String targetIID, int socketTimeout) throws JIException {
 		synchronized (mutex) {
 
-			if (session.isSessionInDestroy() && !obj.fromDestroySession)
-			{
+            if (session.isSessionInDestroy() && !obj.fromDestroySession) {
 				throw new JIException(JIErrorCodes.JI_SESSION_DESTROYED);
 			}
 
-			if (socketTimeout != 0)
-			{
+            if (socketTimeout != 0) {
 				setSocketTimeOut(socketTimeout);
-			}
-			else //for cases where it was something earlier, but is now being set to 0.
+            } else //for cases where it was something earlier, but is now being set to 0.
 			{
-				if (timeoutModifiedfrom0)
-				{
+                if (timeoutModifiedfrom0) {
 					setSocketTimeOut(socketTimeout);
 				}
 			}
@@ -889,24 +822,21 @@ public final class JIComServer extends Stub {
 			try {
 
 				attach();
-				if (!getEndpoint().getSyntax().getUuid().toString().equalsIgnoreCase(targetIID))
-				{
+                if (!getEndpoint().getSyntax().getUuid().toString().equalsIgnoreCase(targetIID)) {
 					//first send an AlterContext to the IID of the interface
 					getEndpoint().getSyntax().setUuid(new rpc.core.UUID(targetIID));
-					getEndpoint().getSyntax().setVersion(0,0);
-					((JIComEndpoint)getEndpoint()).rebindEndPoint();
+                    getEndpoint().getSyntax().setVersion(0, 0);
+                    ((JIComEndpoint) getEndpoint()).rebindEndPoint();
 				}
 
 				setObject(obj.getParentIpid());
-				call(Endpoint.IDEMPOTENT,obj);
+                call(Endpoint.IDEMPOTENT, obj);
 
-			}catch(FaultException e)
-			{
-				throw new JIException(e.status,e);
-			}catch (IOException e) {
-				throw new JIException(JIErrorCodes.RPC_E_UNEXPECTED,e);
-			}catch (JIRuntimeException e1)
-			{
+            } catch (FaultException e) {
+                throw new JIException(e.status, e);
+            } catch (IOException e) {
+                throw new JIException(JIErrorCodes.RPC_E_UNEXPECTED, e);
+            } catch (JIRuntimeException e1) {
 				throw new JIException(e1);
 			}
 
@@ -919,35 +849,30 @@ public final class JIComServer extends Stub {
 	 * @exclude
 	 * @return
 	 */
-	JIInterfacePointer getServerInterfacePointer()
-	{
+    JIInterfacePointer getServerInterfacePointer() {
 		//remoteactivation can be null only incase of OxidResolver ctor getting called.
 		return remoteActivation == null ? interfacePtrCtor : remoteActivation.getMInterfacePointer();
 	}
 
-	void addRef_ReleaseRef(JICallBuilder obj) throws JIException
-	{
+    void addRef_ReleaseRef(JICallBuilder obj) throws JIException {
 		synchronized (mutex) {
 
-			if (remunknownIPID == null)
-			{
+            if (remunknownIPID == null) {
 				return;
 			}
 			//now also set the Object ID for IRemUnknown call this will be the IPID of the returned JIRemActivation or IOxidResolver
 			obj.setParentIpid(remunknownIPID);
 			obj.attachSession(session);
 			try {
-				call(obj,JIRemUnknown.IID_IUnknown);
-			} catch (JIRuntimeException e1)
-			{
+                call(obj, JIRemUnknown.IID_IUnknown);
+            } catch (JIRuntimeException e1) {
 				throw new JIException(e1);
 			}
 
 		}
 	}
 
-	void closeStub()
-	{
+    void closeStub() {
 		try {
 			detach();
 		} catch (Exception e) {
@@ -956,18 +881,13 @@ public final class JIComServer extends Stub {
 		}
 	}
 
-	void setSocketTimeOut(int timeout)
-	{
-		if (timeout == 0)
-		{
+    void setSocketTimeOut(int timeout) {
+        if (timeout == 0) {
 			timeoutModifiedfrom0 = false;
-		}
-		else
-		{
+        } else {
 			timeoutModifiedfrom0 = true;
 		}
 
 		getProperties().setProperty("rpc.socketTimeout", new Integer(timeout).toString());
 	}
-
 }
